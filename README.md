@@ -1,4 +1,4 @@
-# CRM + Chatbot (Projeto Demo / Portfólio)
+# CRM + Chatbot
 
 Aplicação full stack JavaScript que combina um mini CRM de leads com um widget de Chatbot integrado. Construída para fins educacionais e de portfólio – não utiliza dados reais e **não deve ser usada em produção** sem revisão de segurança, persistência adequada e testes automatizados adicionais.
 
