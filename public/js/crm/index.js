@@ -148,6 +148,7 @@ let advancedFiltersWrapper = null;
 let analyticsPanelsEl = null;
 let emptyStateEl = null;
 let emptyMsgEl = null;
+let clearFiltersBtn = null;
 const CLIENTES_EVENT = 'crm:clientes-atualizados';
 
 function notificarClientesAtualizados() {
@@ -373,6 +374,7 @@ function atualizarLista() {
       emptyStateEl.style.display = 'none';
     }
   }
+  atualizarClearFiltersVisibility();
 }
 
 let debounceTimer;
@@ -386,16 +388,60 @@ function bindSearch() {
 
 function contarFiltrosAtivos() {
   let count = 0;
-  if (filtroCidade.value) count++;
-  if (filtroMaquina.value) count++;
-  if (filtroConsultor.value) count++;
-  if (filtroStatus.value) count++;
-  if (count > 0) {
-    activeFiltersBadge.style.display = 'inline-block';
-    activeFiltersBadge.textContent = String(count);
-  } else {
-    activeFiltersBadge.style.display = 'none';
+  if (filtroCidade && filtroCidade.value) count++;
+  if (filtroMaquina && filtroMaquina.value) count++;
+  if (filtroConsultor && filtroConsultor.value) count++;
+  if (filtroStatus && filtroStatus.value) count++;
+  if (activeFiltersBadge) {
+    if (count > 0) {
+      activeFiltersBadge.style.display = 'inline-block';
+      activeFiltersBadge.textContent = String(count);
+    } else {
+      activeFiltersBadge.style.display = 'none';
+    }
   }
+  atualizarClearFiltersVisibility();
+}
+
+function hasFiltrosAplicados() {
+  const buscaAtiva = !!(searchInput && searchInput.value && searchInput.value.trim());
+  return Boolean(
+    buscaAtiva ||
+    (filtroCidade && filtroCidade.value) ||
+    (filtroMaquina && filtroMaquina.value) ||
+    (filtroConsultor && filtroConsultor.value) ||
+    (filtroStatus && filtroStatus.value)
+  );
+}
+
+function atualizarClearFiltersVisibility() {
+  if (!clearFiltersBtn) return;
+  const deveMostrar = hasFiltrosAplicados();
+  clearFiltersBtn.style.display = deveMostrar ? 'inline-flex' : 'none';
+  clearFiltersBtn.setAttribute('aria-hidden', deveMostrar ? 'false' : 'true');
+  clearFiltersBtn.tabIndex = deveMostrar ? 0 : -1;
+}
+
+function limparFiltros({ incluirBusca = true } = {}) {
+  if (incluirBusca && searchInput) {
+    searchInput.value = '';
+  }
+  [filtroCidade, filtroMaquina, filtroConsultor, filtroStatus].forEach(select => {
+    if (select) select.value = '';
+  });
+}
+
+function handleClearFiltersClick(event) {
+  event.preventDefault();
+  if (!hasFiltrosAplicados()) {
+    atualizarClearFiltersVisibility();
+    return;
+  }
+  limparFiltros();
+  currentPage = 1;
+  contarFiltrosAtivos();
+  atualizarLista();
+  fecharPainelFiltros();
 }
 
 function bindAdvancedFilters() {
@@ -406,7 +452,7 @@ function bindAdvancedFilters() {
     fecharPainelFiltros();
   });
   clearAdvancedFiltersBtn && clearAdvancedFiltersBtn.addEventListener('click', () => {
-    [filtroCidade,filtroMaquina,filtroConsultor,filtroStatus].forEach(s => s.value='');
+    limparFiltros({ incluirBusca: false });
     currentPage = 1;
     atualizarLista();
     contarFiltrosAtivos();
@@ -414,10 +460,12 @@ function bindAdvancedFilters() {
 }
 
 function abrirPainelFiltros() {
+  if (!advancedFiltersPanel || !toggleAdvancedFiltersBtn) return;
   advancedFiltersPanel.style.display = 'flex';
   toggleAdvancedFiltersBtn.setAttribute('aria-expanded','true');
 }
 function fecharPainelFiltros() {
+  if (!advancedFiltersPanel || !toggleAdvancedFiltersBtn) return;
   advancedFiltersPanel.style.display = 'none';
   toggleAdvancedFiltersBtn.setAttribute('aria-expanded','false');
 }
@@ -1018,6 +1066,10 @@ function bindClientesRefs() {
   analyticsPanelsEl = document.getElementById('analytics-panels');
   emptyStateEl = document.getElementById('empty-clients');
   emptyMsgEl = document.getElementById('empty-clients-msg');
+  clearFiltersBtn = document.getElementById('clearFilters');
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', handleClearFiltersClick);
+  }
 }
 
 function inicializarCollapseClientesHeader() {

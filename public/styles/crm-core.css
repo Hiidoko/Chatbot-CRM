@@ -76,6 +76,11 @@ html,body {margin:0;padding:0;height:100%;font-family:var(--font-base);backgroun
 .clientes-scroll-area #clientes-list { margin:12px 24px 0; }
 .clientes-scroll-area .pagination-bar { position:sticky; bottom:0; background:linear-gradient(to top, var(--color-bg), rgba(244,246,250,0.4)); backdrop-filter:blur(4px); margin-top:8px; }
 
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 24px 64px;text-align:center;color:var(--color-text-soft);transition:padding var(--transition-base),margin var(--transition-base);}
+.empty-state p{margin:0;font-size:1rem;line-height:1.45;max-width:420px;}
+.empty-state .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 20px;font-weight:600;box-shadow:var(--shadow-sm);} 
+
+
 .cliente-card,.consultor-card{background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;transition:box-shadow .25s,transform .25s;border-left:5px solid var(--color-primary-accent);opacity:0;transform:translateY(14px) scale(.98);animation:cardIn .55s forwards cubic-bezier(.16,.84,.44,1);} 
 .cliente-card:hover,.consultor-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px) scale(1.01);} 
 .cliente-card{position:relative;cursor:pointer;}
@@ -260,6 +265,7 @@ html,body {margin:0;padding:0;height:100%;font-family:var(--font-base);backgroun
   body.sidebar-expanded .sidebar-user{display:flex;} 
   body.sidebar-expanded .sidebar-user div{display:flex;flex-direction:column;} 
   .crm-sidebar nav li{gap:10px;} 
+  .empty-state{align-items:flex-start;text-align:left;padding:36px 20px 52px;margin:0 16px 32px 16px;} 
 }
 
 @media (max-width:900px){
