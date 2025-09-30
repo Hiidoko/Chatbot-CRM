@@ -14,6 +14,13 @@ html,body {margin:0;padding:0;height:100%;font-family:var(--font-base);backgroun
 .crm-main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
 
 .crm-sidebar{width:240px;background:#1a2235;color:#fff;display:flex;flex-direction:column;justify-content:flex-start;padding:24px 0 0;box-shadow:2px 0 8px rgba(0,0,0,.07);transition:transform .32s cubic-bezier(.16,.84,.44,1);} 
+.sidebar-toggle{display:none;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;border:none;background:var(--color-primary);color:#fff;cursor:pointer;transition:background var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast);} 
+.sidebar-toggle:hover{background:var(--color-primary-hover);}
+.sidebar-toggle:focus-visible{outline:none;box-shadow:0 0 0 3px var(--color-focus-ring);}
+.sidebar-toggle:active{transform:translateY(1px);}
+.sidebar-toggle i{pointer-events:none;font-size:1.2rem;}
+.crm-sidebar-overlay{position:fixed;inset:0;background:rgba(7,12,28,.4);backdrop-filter:blur(2px);z-index:1100;display:none;opacity:0;transition:opacity var(--transition-base);} 
+.crm-sidebar-overlay[hidden]{display:none!important;}
 .sidebar-logo{display:flex;align-items:center;gap:12px;padding:0 24px 32px;font-size:1.2em;font-weight:700;}
 .crm-sidebar nav ul{list-style:none;margin:20px 0 0;padding:0;} /* ajuste: 20px de respiro abaixo do logo */
 .crm-sidebar nav li{padding:14px 32px;cursor:pointer;font-size:1.05em;display:flex;align-items:center;gap:12px;border-left:4px solid transparent;transition:background .2s,border-color .2s;position:relative;outline:0;}
@@ -149,7 +156,7 @@ html,body {margin:0;padding:0;height:100%;font-family:var(--font-base);backgroun
   .cliente-actions{margin-top:10px;}
 }
 @media (max-width:600px){.crm-header-top h1{font-size:1.3em;} #searchInput{width:100%;} #addClientBtn{font-size:1em;padding:12px 16px;} .cliente-card,.consultor-card{font-size:.95em;padding:18px 12px;} .modal-content input{font-size:1em;padding:12px;} }
-@media (max-width:500px){#chatbot-widget{right:0;left:0;margin:0 auto;bottom:8px;} .cliente-actions button{font-size:.6rem;padding:6px 8px;} .pagination-bar{padding:12px 12px 56px;} }
+@media (max-width:500px){#chatbot-widget{right:0;left:0;margin:0 auto;bottom:8px;} .cliente-actions button{font-size:.6rem;padding:6px 8px;} .pagination-bar{padding:12px 12px 56px;} .sidebar-toggle{width:42px;height:42px;} .crm-header-actions .btn{flex:0 0 auto;width:48px;padding:12px;justify-content:center;} .crm-header-actions .btn span{display:none;}}
 
 /* ---- Campo Especialidade (modo consultor) ---- */
 .field-especialidade-wrapper { margin-top:8px; }
@@ -216,6 +223,43 @@ html,body {margin:0;padding:0;height:100%;font-family:var(--font-base);backgroun
 .clientes-header-wrapper[data-collapsed="true"] .crm-header { display:none; }
 .clientes-header-wrapper .total-inline { font-size:.75rem; font-weight:600; color:var(--color-text-soft); }
 .clientes-header-wrapper[data-collapsed="true"] ~ .clientes-scroll-area #analytics-panels { display:none !important; }
+
+@media (max-width:768px){
+  html,body{overflow:auto;}
+  body.sidebar-expanded{overflow:hidden;}
+  .crm-layout{display:block;height:auto;min-height:100vh;overflow-x:hidden;}
+  .crm-sidebar{position:fixed;top:0;left:0;bottom:0;width:72px;padding:20px 0;z-index:1205;box-shadow:4px 0 18px rgba(0,0,0,.18);transition:width var(--transition-base),box-shadow var(--transition-fast);}
+  body.sidebar-expanded .crm-sidebar{width:240px;box-shadow:8px 0 28px rgba(0,0,0,.24);}
+  body.sidebar-collapsed .crm-sidebar{width:72px;}
+  .crm-main{margin-left:72px;min-height:100vh;overflow:visible;}
+  body.sidebar-expanded .crm-main{margin-left:240px;}
+  .crm-sidebar-overlay{display:block;opacity:0;pointer-events:none;}
+  body.sidebar-expanded .crm-sidebar-overlay{opacity:1;pointer-events:auto;}
+  .sidebar-toggle{display:inline-flex;box-shadow:0 4px 12px rgba(21,101,192,.28);} 
+  .crm-header-top{position:sticky;top:0;z-index:1000;background:var(--color-surface);flex-wrap:wrap;gap:12px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,.08);} 
+  .crm-header-top h1{font-size:1.25em;flex:1 1 auto;margin:0;} 
+  .crm-header-actions{width:100%;display:flex;gap:12px;justify-content:flex-end;} 
+  .crm-header-actions .btn{flex:1 1 100%;justify-content:center;} 
+  .clientes-list,.consultores-list{margin:12px 16px 0;} 
+  #analytics-panels{padding:0 16px 10px;} 
+  .clientes-header-wrapper{margin:12px 16px 0;} 
+  .sidebar-logo{padding:0 0 24px;justify-content:flex-start;} 
+  body.sidebar-collapsed .sidebar-logo{justify-content:center;} 
+  body.sidebar-collapsed .sidebar-logo span{display:none;} 
+  body.sidebar-collapsed .crm-sidebar nav li span{display:none!important;} 
+  body.sidebar-collapsed .crm-sidebar nav li{padding:14px 0;justify-content:center;border-left:none;background:transparent;} 
+  body.sidebar-collapsed .crm-sidebar nav li i{margin:0;font-size:1.2rem;} 
+  body.sidebar-collapsed .crm-sidebar nav li.active,
+  body.sidebar-collapsed .crm-sidebar nav li:hover{background:rgba(66,165,245,.18);} 
+  body.sidebar-collapsed .crm-sidebar nav li.active::before{display:none;} 
+  body.sidebar-collapsed .sidebar-user{display:none;} 
+  body.sidebar-expanded .crm-sidebar nav li{padding:14px 24px;justify-content:flex-start;} 
+  body.sidebar-expanded .crm-sidebar nav li span{display:inline;} 
+  body.sidebar-expanded .sidebar-logo span{display:inline;} 
+  body.sidebar-expanded .sidebar-user{display:flex;} 
+  body.sidebar-expanded .sidebar-user div{display:flex;flex-direction:column;} 
+  .crm-sidebar nav li{gap:10px;} 
+}
 
 @media (max-width:900px){
   .clientes-header-wrapper { margin:12px 12px 0; }

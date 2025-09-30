@@ -7,7 +7,6 @@ export class CRM {
 
   listar() { return this.clientes; }
 
-  // Filtro simples em memória. Caso futuro: substituir por chamada à API.
   filtrar(query) {
     if (!query) return this.clientes;
     const q = removerAcentos(String(query).toLowerCase().trim());

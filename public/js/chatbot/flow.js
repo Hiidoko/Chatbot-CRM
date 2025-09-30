@@ -91,13 +91,11 @@ export class ChatbotFlow {
   }
 
   _enviarDados(payload) {
-    // Mostra overlay loader
     const overlay = document.createElement('div');
     overlay.className = 'loader-overlay';
     overlay.innerHTML = `<div class="spinner"></div><div class="status-text">Enviando...</div>`;
     document.getElementById('chat-container').appendChild(overlay);
 
-    // Simulação de possível falha (10% chance)
     const falha = Math.random() < 0.1;
 
     setTimeout(() => {

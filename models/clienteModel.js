@@ -10,7 +10,6 @@ function carregar() {
     if (!fs.existsSync(DATA_FILE)) return;
     clientes = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) || [];
   } catch (e) {
-    // Em ambientes somente leitura ou em caso de erro de parsing
     console.warn('Falha ao carregar clientes (seguindo com memória volátil):', e.message);
     clientes = [];
   }
@@ -20,7 +19,6 @@ function salvar() {
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(clientes, null, 2));
   } catch (e) {
-    // Em ambientes somente leitura, gravar no FS pode falhar; manter silencioso.
     if (process.env.NODE_ENV !== 'production') {
       console.warn('Não foi possível persistir clientes no arquivo:', e.message);
     }

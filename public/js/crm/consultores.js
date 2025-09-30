@@ -1,4 +1,3 @@
-// Fonte única de dados de consultores no front-end
 export const CONSULTOR_LIST = [
   { nome: 'João', email: 'joao@empresa.com', telefone: '(11) 99999-1111', cidade: 'São Paulo', especialidade: 'Máquina A' },
   { nome: 'Maria', email: 'maria@empresa.com', telefone: '(21) 98888-2222', cidade: 'Rio de Janeiro', especialidade: 'Máquina B' },
@@ -19,7 +18,6 @@ export function adicionarConsultor(data){
   });
 }
 
-// Novo: cards colapsáveis - inicialmente mostram apenas nome & cidade; clique expande detalhes
 export function renderConsultores(container, opts = {}) {
   const termo = (opts.termo || '').toLowerCase();
   const campo = opts.campo || 'nome';
@@ -103,7 +101,6 @@ export function renderConsultores(container, opts = {}) {
   }
 }
 
-// Inicializa barra de busca (chamada após partial carregada)
 export function initConsultoresSearch(container, renderLista) {
   const toggleBtn = document.getElementById('consultores-search-toggle');
   const panel = document.getElementById('consultores-search-panel');

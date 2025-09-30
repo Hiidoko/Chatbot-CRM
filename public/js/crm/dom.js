@@ -36,7 +36,7 @@ export function renderClientes(container, clientes, callbacks) {
       indicator.textContent = expanded ? '−' : '+';
     }
     card.addEventListener('click', e => {
-      if (e.target.closest('.cliente-actions')) return; // não toggle em botões
+      if (e.target.closest('.cliente-actions')) return;
       if (e.target.closest('button')) return;
       toggle();
     });

@@ -1,6 +1,3 @@
-// Validação de cliente no front-end (CRM)
-// Mantém regras alinhadas com o back-end
-
 const EMAIL_REGEX = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
 const NOME_CIDADE_REGEX = /^[A-Za-zÀ-ÿ\s]{2,}$/;
 
@@ -29,14 +26,12 @@ export function validarCliente(dados) {
 export function exibirErrosModal(errors, fieldsContainer) {
   limparErros(fieldsContainer);
   const map = {}; errors.forEach(e => { if (!map[e.field]) map[e.field] = e.message; });
-  // Sumário agregado
   const summaryEl = document.getElementById('validation-summary');
   if (summaryEl) {
     if (errors.length) {
       summaryEl.style.display = 'block';
       summaryEl.innerHTML = `<strong>Foram encontrados ${errors.length} erro(s):</strong>` +
         '<ul>' + errors.map(e => `<li><button type="button" class="link-erro" data-field="${e.field}" style="background:none;border:none;padding:0;margin:0;color:#b71c1c;cursor:pointer;text-decoration:underline;font:inherit;">${e.message}</button></li>`).join('') + '</ul>';
-      // Clique leva foco ao campo
       summaryEl.querySelectorAll('button.link-erro').forEach(btn => {
         btn.addEventListener('click', () => {
           const f = fieldsContainer[btn.dataset.field];

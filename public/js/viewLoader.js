@@ -24,7 +24,6 @@ export async function swapView(name) {
     const html = await loadView(name);
     root.innerHTML = html;
     root.classList.remove('view-loading');
-    // Inicializadores específicos
     if (name === 'clientes' && window.initClientes) window.initClientes();
     if (name === 'consultores' && window.initConsultores) window.initConsultores();
     if (name === 'sobre' && window.initSobre) window.initSobre();

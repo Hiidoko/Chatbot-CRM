@@ -36,6 +36,113 @@ const toastContainer = document.getElementById('crm-toast-container');
 const chatbotWidget = document.getElementById('chatbot-widget');
 const headerTop = document.querySelector('.crm-header-top');
 const headerTitle = headerTop ? headerTop.querySelector('h1') : null;
+const sidebar = document.getElementById('crmSidebar');
+const sidebarToggleBtn = document.getElementById('sidebarToggle');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const SIDEBAR_COLLAPSED_CLASS = 'sidebar-collapsed';
+const SIDEBAR_EXPANDED_CLASS = 'sidebar-expanded';
+const SIDEBAR_MEDIA_QUERY = '(max-width: 768px)';
+const sidebarMediaQuery = window.matchMedia(SIDEBAR_MEDIA_QUERY);
+let navMenuItems = [];
+let sidebarOverlayHideTimeout = null;
+
+function isMobileSidebarMode() {
+  return sidebarMediaQuery.matches;
+}
+
+function updateSidebarAccessibility(forceDesktop = false) {
+  if (!navMenuItems || navMenuItems.length === 0) return;
+  const collapsed = !forceDesktop && document.body.classList.contains(SIDEBAR_COLLAPSED_CLASS) && !document.body.classList.contains(SIDEBAR_EXPANDED_CLASS) && isMobileSidebarMode();
+  navMenuItems.forEach(item => {
+    if (!item) return;
+    const text = item.querySelector('span')?.textContent?.trim() || item.textContent.trim();
+    if (!text) return;
+    item.setAttribute('aria-label', text);
+    if (collapsed) item.setAttribute('title', text); else item.removeAttribute('title');
+  });
+}
+
+function setSidebarState(state) {
+  if (!sidebar || !isMobileSidebarMode()) return;
+  clearTimeout(sidebarOverlayHideTimeout);
+  if (state === 'expanded') {
+    document.body.classList.add(SIDEBAR_EXPANDED_CLASS);
+    document.body.classList.remove(SIDEBAR_COLLAPSED_CLASS);
+    sidebarToggleBtn?.setAttribute('aria-expanded', 'true');
+    sidebarToggleBtn?.setAttribute('aria-label', 'Fechar menu');
+    if (sidebarOverlay) {
+      sidebarOverlay.removeAttribute('hidden');
+    }
+    const activeMenu = navMenuItems?.find(item => item?.classList.contains('active')) || navMenuItems?.[0];
+    if (activeMenu) {
+      requestAnimationFrame(() => activeMenu.focus());
+    }
+  } else {
+    document.body.classList.add(SIDEBAR_COLLAPSED_CLASS);
+    document.body.classList.remove(SIDEBAR_EXPANDED_CLASS);
+    sidebarToggleBtn?.setAttribute('aria-expanded', 'false');
+    sidebarToggleBtn?.setAttribute('aria-label', 'Abrir menu');
+    if (sidebarOverlay) {
+      sidebarOverlayHideTimeout = setTimeout(() => {
+        if (!document.body.classList.contains(SIDEBAR_EXPANDED_CLASS)) {
+          sidebarOverlay.setAttribute('hidden', '');
+        }
+      }, 220);
+    }
+  }
+  updateSidebarAccessibility();
+}
+
+function syncSidebarForViewport() {
+  if (!sidebar) return;
+  clearTimeout(sidebarOverlayHideTimeout);
+  if (isMobileSidebarMode()) {
+    if (!document.body.classList.contains(SIDEBAR_COLLAPSED_CLASS) && !document.body.classList.contains(SIDEBAR_EXPANDED_CLASS)) {
+      document.body.classList.add(SIDEBAR_COLLAPSED_CLASS);
+    }
+    if (document.body.classList.contains(SIDEBAR_EXPANDED_CLASS)) {
+      sidebarOverlay?.removeAttribute('hidden');
+    } else {
+      sidebarOverlay?.setAttribute('hidden', '');
+    }
+    sidebarToggleBtn?.setAttribute('aria-expanded', document.body.classList.contains(SIDEBAR_EXPANDED_CLASS) ? 'true' : 'false');
+    sidebarToggleBtn?.setAttribute('aria-label', document.body.classList.contains(SIDEBAR_EXPANDED_CLASS) ? 'Fechar menu' : 'Abrir menu');
+    updateSidebarAccessibility();
+  } else {
+    document.body.classList.remove(SIDEBAR_COLLAPSED_CLASS, SIDEBAR_EXPANDED_CLASS);
+    sidebarOverlay?.setAttribute('hidden', '');
+    sidebarToggleBtn?.setAttribute('aria-expanded', 'false');
+    sidebarToggleBtn?.setAttribute('aria-label', 'Abrir menu');
+    updateSidebarAccessibility(true);
+  }
+}
+
+syncSidebarForViewport();
+
+if (sidebarMediaQuery.addEventListener) {
+  sidebarMediaQuery.addEventListener('change', syncSidebarForViewport);
+} else if (sidebarMediaQuery.addListener) {
+  sidebarMediaQuery.addListener(syncSidebarForViewport);
+}
+
+sidebarToggleBtn?.addEventListener('click', () => {
+  if (!isMobileSidebarMode()) return;
+  const expanded = document.body.classList.contains(SIDEBAR_EXPANDED_CLASS);
+  setSidebarState(expanded ? 'collapsed' : 'expanded');
+});
+
+sidebarOverlay?.addEventListener('click', () => {
+  setSidebarState('collapsed');
+  sidebarToggleBtn?.focus();
+});
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && isMobileSidebarMode() && document.body.classList.contains(SIDEBAR_EXPANDED_CLASS)) {
+    setSidebarState('collapsed');
+    sidebarToggleBtn?.focus();
+  }
+});
+
 let headerFilters = null;
 let advancedFiltersWrapper = null;
 let analyticsPanelsEl = null;
@@ -98,15 +205,15 @@ const fields = {
   email: document.getElementById('editEmail'),
   telefone: document.getElementById('editTelefone'),
   cidade: document.getElementById('editCidade'),
-  maquina: document.getElementById('editMaquina'), // será oculto em modo consultor (usaremos campo especialidade custom)
+  maquina: document.getElementById('editMaquina'), 
   horario: document.getElementById('editHorario')
 };
 fields.status = document.getElementById('editStatus');
-let campoEspecialidadeWrapper = null; // container custom
-let campoEspecialidadeInput = null;   // input de busca
-let campoEspecialidadeList = null;    // lista de opções
-let campoEspecialidadeHidden = null;  // valor escolhido
-let especialidadeActiveIndex = -1;    // índice ativo para navegação por teclado
+let campoEspecialidadeWrapper = null; 
+let campoEspecialidadeInput = null;  
+let campoEspecialidadeList = null;  
+let campoEspecialidadeHidden = null;  
+let especialidadeActiveIndex = -1;  
 
 let editId = null;
 let isNew = false;
@@ -131,7 +238,6 @@ function aplicarDefaultsCliente(cliente) {
   return cliente;
 }
 
-// ================= Atribuição Automática de Consultor ==================
 function selecionarConsultorPorMaquina(maquina) {
   if (!maquina) return null;
   const alvoNorm = maquina.toLowerCase();
@@ -243,7 +349,7 @@ function obterFonteAtual() {
 }
 
 function atualizarLista() {
-  if (!clientesContainer) return; // view ainda não carregada
+  if (!clientesContainer) return;
   let lista = obterFonteAtual();
   lista = sortLista(lista);
   const pageData = paginar(lista);
@@ -269,7 +375,6 @@ function atualizarLista() {
   }
 }
 
-// Debounce simples para não re-renderizar a cada tecla muito rápido
 let debounceTimer;
 function bindSearch() {
   if (!searchInput) return;
@@ -279,7 +384,6 @@ function bindSearch() {
   });
 }
 
-// Atualiza lista quando selects mudam
 function contarFiltrosAtivos() {
   let count = 0;
   if (filtroCidade.value) count++;
@@ -333,7 +437,6 @@ function outsideFiltersHandler(e){ if (advancedFiltersPanel && !advancedFiltersP
 function preencherSelect(selectEl, valores) {
   const atual = selectEl.value;
   const base = Array.from(new Set(valores.filter(v => v))).sort((a,b) => a.localeCompare(b, 'pt-BR'));
-  // Mantém primeiro option (todas)
   selectEl.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
   base.forEach(v => {
     const opt = document.createElement('option');
@@ -345,7 +448,7 @@ function preencherSelect(selectEl, valores) {
 }
 
 function atualizarFiltrosDinamicos() {
-  if (!filtroCidade) return; // não está na view
+  if (!filtroCidade) return; 
   const todos = crm.listar();
   preencherSelect(filtroCidade, todos.map(c => c.cidade));
   preencherSelect(filtroMaquina, todos.map(c => c.maquina));
@@ -391,7 +494,6 @@ function abrirModalEdicao(id) {
   mostrarModal();
 }
 
-// ----- Edição Inline -----
 let inlineEditingId = null;
 const EDITABLE_FIELDS = ['nome','email','telefone','cidade','maquina','horario','status'];
 
@@ -404,7 +506,7 @@ function prepararEdicaoInline() {
       btn.addEventListener('click', e => {
         e.preventDefault();
         iniciarEdicaoInline(card, id);
-      }, { once: true }); // evita múltiplos binds
+      }, { once: true });
     }
   });
 }
@@ -417,7 +519,6 @@ function iniciarEdicaoInline(card, id) {
   card.classList.add('editing');
   const cliente = crm.obter(id);
   const info = card.querySelector('.cliente-info');
-  // Converter campos
   info.querySelectorAll('.field').forEach(el => {
     const field = el.getAttribute('data-field');
     if (!EDITABLE_FIELDS.includes(field)) return;
@@ -443,7 +544,6 @@ function iniciarEdicaoInline(card, id) {
       el.classList.add('inline-editor');
     }
   });
-  // Adicionar ações inline
   const actions = card.querySelector('.cliente-actions');
   const inlineBar = document.createElement('div');
   inlineBar.className = 'inline-actions';
@@ -466,9 +566,7 @@ function coletarEdicaoInline(card) {
 }
 
 function validarInline(data) {
-  // Reaproveita validador completo mas restringe ao conjunto usado
   const { valid, errors, value } = validarClienteUnit(data);
-  // Filtra somente campos presentes
   const filteredErrors = errors.filter(e => Object.keys(data).includes(e.field));
   const sanitized = { ...value };
   if (data.status !== undefined) sanitized.status = typeof data.status === 'string' ? data.status.trim() : data.status;
@@ -498,7 +596,6 @@ function salvarEdicaoInline(card, id) {
   const data = coletarEdicaoInline(card);
   const { valid, errors, value } = validarInline(data);
   if (!valid) { exibirErrosInline(card, errors); return; }
-  // Se mudou máquina ou cliente sem consultor válido, reatribuir
   const original = crm.obter(id);
   let payload = { ...value };
   if (value.maquina) {
@@ -612,7 +709,6 @@ saveEditBtn.onclick = () => {
   limparErros(fields);
   let novoId = null;
   if (isNew) {
-    // Atribuição automática para novo cliente
     if (!value.consultor && value.maquina) {
       const cons = selecionarConsultorPorMaquina(value.maquina);
       if (cons) value.consultor = cons;
@@ -622,7 +718,6 @@ saveEditBtn.onclick = () => {
     notificarClientesAtualizados();
     toast('Cliente adicionado com sucesso','sucesso');
   } else {
-    // Em edição: se máquina alterada ou consultor ausente/incompatível -> reatribuir
     const original = crm.obter(editId);
     if (value.maquina) {
       const objAtual = original.consultor && CONSULTOR_LIST.find(c => c.nome === original.consultor);
@@ -663,6 +758,8 @@ const menuClientes = document.getElementById('menu-clientes');
 const menuConsultores = document.getElementById('menu-consultores');
 const menuSobre = document.getElementById('menu-sobre');
 const menuItems = [menuClientes, menuConsultores, menuSobre];
+navMenuItems = menuItems;
+updateSidebarAccessibility(!isMobileSidebarMode());
 
 async function showSection(section, opts = {}) {
   const valid = ['clientes','consultores','sobre'];
@@ -670,13 +767,13 @@ async function showSection(section, opts = {}) {
   await swapView(section);
   const targetMenu = menuItems.find(m=>m.id==='menu-'+section);
   if (targetMenu) setActiveMenu(targetMenu);
+  if (isMobileSidebarMode()) setSidebarState('collapsed');
   const isSobre = section === 'sobre';
   if (headerTop) headerTop.style.display = isSobre ? 'none' : '';
   if (chatbotWidget) {
     if (section === 'clientes') chatbotWidget.style.display = 'flex';
     else chatbotWidget.style.display = 'none';
   }
-  // Restaura comportamento do botão principal conforme seção
   if (addClientBtn) {
     if (section === 'clientes') {
       addClientBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Novo Cliente';
@@ -717,7 +814,6 @@ menuClientes.onclick = () => showSection('clientes');
 menuConsultores.onclick = () => showSection('consultores');
 menuSobre.onclick = () => showSection('sobre');
 
-// Navegação por teclado (setas cima/baixo) e Enter
 menuItems.forEach((el, idx) => {
   el.setAttribute('role','menuitem');
   el.addEventListener('keydown', e => {
@@ -734,7 +830,6 @@ menuItems.forEach((el, idx) => {
   });
 });
 
-// Restaurar seção ativa (hash > localStorage > default)
 async function inicializarSecao() {
   let alvo = (location.hash || '').replace('#','').trim();
   if (!alvo) alvo = localStorage.getItem('crm-active-section') || 'clientes';
@@ -742,13 +837,11 @@ async function inicializarSecao() {
 }
 inicializarSecao();
 
-// Sincronizar com mudança manual de hash
 window.addEventListener('hashchange', () => {
   const alvo = (location.hash || '').replace('#','').trim();
   if (alvo) showSection(alvo, { updateHash: false });
 });
 
-// Chatbot widget
 const openChatbotBtn = document.getElementById('open-chatbot');
 const chatbotPopup = document.getElementById('chatbot-popup');
 function toggleChatbot(force) {
@@ -765,7 +858,6 @@ window.addEventListener('click', e => {
   }
 });
 
-// Recebe novo cliente do iframe
 window.addEventListener('message', event => {
   if (event.data && event.data.tipo === 'novoCliente' && event.data.cliente) {
     const bruto = { ...event.data.cliente };
@@ -794,9 +886,7 @@ window.addEventListener('message', event => {
   }
 });
 
-// Inicialização de views agora ocorre via window.init* após swapView
 
-// ================== Sobre: versão & i18n ==================
 async function carregarVersaoProjeto() {
   try {
     const resp = await fetch('/api/meta/version');
@@ -868,12 +958,10 @@ function aplicarI18n(lang) {
     const key = node.getAttribute('data-i18n');
     if (!dict[key]) return;
     node.classList.remove('i18n-fade-enter');
-    // Força reflow para reiniciar animação
-    void node.offsetWidth; // reflow
+    void node.offsetWidth; 
     node.innerHTML = dict[key];
     node.classList.add('i18n-fade-enter');
   });
-  // Ajusta estado dos botões
   const btnPt = document.getElementById('langPt');
   const btnEn = document.getElementById('langEn');
   if (btnPt && btnEn) {
@@ -890,7 +978,6 @@ function inicializarI18n() {
   document.getElementById('langEn')?.addEventListener('click', () => aplicarI18n('en'));
 }
 
-// i18n/versão serão inicializados apenas quando view Sobre carregar (initSobre)
 
 function mostrarModal() {
   editModal.classList.remove('closing');
@@ -904,10 +991,8 @@ function fecharModal() {
   editModal.classList.remove('show');
   setTimeout(()=> { if(editModal.classList.contains('closing')) { editModal.style.display='none'; editModal.classList.remove('closing'); } }, 320);
 }
-// fechar com ESC
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && editModal.style.display === 'flex') fecharModal(); });
 
-// ================= Views Dinâmicas ==================
 function bindClientesRefs() {
   clientesContainer = document.getElementById('clientes-list');
   totalClientes = document.getElementById('totalClients');
@@ -961,14 +1046,12 @@ function inicializarCollapseClientesHeader() {
       toggle();
     }
   });
-  // Acessibilidade: aria-hidden na região quando colapsada (dinâmico via MutationObserver)
   if (region) {
     const observer = new MutationObserver(()=>{
       const collapsed = wrapper.dataset.collapsed === 'true';
       region.setAttribute('aria-hidden', collapsed ? 'true':'false');
     });
     observer.observe(wrapper, { attributes:true, attributeFilter:['data-collapsed'] });
-    // Set inicial
     region.setAttribute('aria-hidden', wrapper.dataset.collapsed === 'true' ? 'true':'false');
     if (analyticsPanelsEl) analyticsPanelsEl.setAttribute('aria-hidden', wrapper.dataset.collapsed === 'true' ? 'true':'false');
   }
@@ -983,7 +1066,6 @@ window.initClientes = function initClientes() {
   contarFiltrosAtivos();
   atualizarLista();
   inicializarCollapseClientesHeader();
-  // Reatribuição automática para clientes existentes (uma vez por sessão)
   if (!window.__consultoresReatribuicaoFeita) {
     const qtd = reatribuirConsultoresClientesExistentes();
     if (qtd > 0) {
@@ -1131,7 +1213,6 @@ window.initConsultores = function initConsultores() {
 function prepararCampoEspecialidade() {
   if (!editModal) return;
   if (!campoEspecialidadeWrapper) {
-    // Inserir antes do campo máquina original (que ficará oculto)
     const maquinaInput = fields.maquina;
     campoEspecialidadeWrapper = document.createElement('div');
     campoEspecialidadeWrapper.className = 'field-especialidade-wrapper';
@@ -1142,7 +1223,6 @@ function prepararCampoEspecialidade() {
         <input type="hidden" class="especialidade-hidden" />
         <ul class="especialidade-opcoes" id="lista-especialidade" role="listbox"></ul>
       </div>`;
-    // Inserir antes do botão salvar (último .modal-buttons)
     const modalButtons = editModal.querySelector('.modal-buttons');
     editModal.querySelector('.modal-content').insertBefore(campoEspecialidadeWrapper, modalButtons);
     campoEspecialidadeInput = campoEspecialidadeWrapper.querySelector('.especialidade-input');
@@ -1161,8 +1241,7 @@ function prepararCampoEspecialidade() {
 
 function encontrarLabelPorControl(inputEl) {
   if (!inputEl) return null;
-  // Estrutura atual: <label>Texto:</label> <input ...>
-  // Procuramos o label imediatamente anterior
+
   let prev = inputEl.previousElementSibling;
   if (prev && prev.tagName === 'LABEL') return prev;
   return null;
@@ -1263,7 +1342,6 @@ function fecharListaEspecialidade() {
 }
 
 function restaurarCamposCliente() {
-  // Mostrar novamente campos ocultos quando voltar a modo cliente
   mostrarCampoComLabel(fields.maquina);
   mostrarCampoComLabel(fields.horario);
   mostrarCampoComLabel(fields.status);
