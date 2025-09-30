@@ -111,11 +111,10 @@ Payload básico (POST / PUT):
 Projeto educativo. Não armazene dados sensíveis. Adapte segurança, rate limiting, logs estruturados e auditoria antes de qualquer uso externo.
 
 ## 📄 Licença
-ISC (simplificada) – ajuste conforme necessidade do seu portfólio.
+Distribuído sob a licença **MIT**. Consulte o arquivo `LICENSE` para detalhes.
 
-## 🙌 Créditos / Autor
-Criado por: **(Seu Nome / Alias)**  
+## 🙌 Créditos
+Criado por: **Caio Marques (Hiidoko)**  
 LinkedIn: https://linkedin.com/in/hiidoko  
-GitHub: https://github.com/Hiidoko
 
 Se este projeto for útil para estudo, marque a estrela no repositório! ⭐
