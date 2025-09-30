@@ -1,0 +1,86 @@
+<!-- Partial: Clientes -->
+<div class="clientes-header-wrapper" data-collapsed="false">
+  <div class="clientes-header-toggle-bar">
+    <button id="toggleClientesHeader" class="clientes-header-toggle" aria-expanded="true" aria-controls="clientes-header-partial" title="Mostrar / Ocultar filtros">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span class="label">Filtros & Busca</span>
+      <i class="chevron fa-solid fa-chevron-up" aria-hidden="true"></i>
+    </button>
+    <span id="totalClients" class="total-info total-inline"></span>
+  </div>
+  <div class="crm-header" id="clientes-header-partial" role="region" aria-label="Filtros principais">
+  <input type="text" id="searchInput" placeholder="Buscar por nome ou e-mail...">
+  <button id="toggleAdvancedFilters" class="filter-button" aria-expanded="false" aria-controls="advancedFiltersPanel" title="Filtros avançados">
+    <i class="fa-solid fa-filter"></i>
+    <span id="activeFiltersBadge" class="filter-badge" style="display:none">0</span>
+  </button>
+  <div class="sort-wrapper">
+    <select id="sortBy" title="Ordenação">
+      <option value="dataDesc">Data (mais recente)</option>
+      <option value="dataAsc">Data (mais antiga)</option>
+      <option value="nomeAsc">Nome (A-Z)</option>
+      <option value="nomeDesc">Nome (Z-A)</option>
+      <option value="statusAsc">Status (pipeline)</option>
+      <option value="statusDesc">Status (pipeline inverso)</option>
+      <option value="consultorAsc">Consultor (A-Z)</option>
+      <option value="consultorDesc">Consultor (Z-A)</option>
+    </select>
+    <select id="pageSize" title="Itens por página">
+      <option value="" disabled selected hidden>Visualizar por quantidade</option>
+      <option value="25">25</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="all">Todos</option>
+    </select>
+  </div>
+  </div>
+</div>
+<div id="advancedFiltersWrapper">
+  <div id="advancedFiltersPanel" class="advanced-filters" role="region" aria-label="Filtros avançados" style="display:none;">
+    <header class="adv-head"><span><i class="fa-solid fa-sliders"></i> Filtros Avançados</span><button id="closeAdvancedFilters" class="close-adv" title="Fechar filtros" aria-label="Fechar filtros"><i class="fa-solid fa-xmark"></i></button></header>
+    <div class="adv-body">
+      <div class="adv-field">
+        <label for="filtroCidade">Cidade</label>
+        <select id="filtroCidade"><option value="">Todas</option></select>
+      </div>
+      <div class="adv-field">
+        <label for="filtroMaquina">Máquina</label>
+        <select id="filtroMaquina"><option value="">Todas</option></select>
+      </div>
+      <div class="adv-field">
+        <label for="filtroConsultor">Consultor</label>
+        <select id="filtroConsultor"><option value="">Todos</option></select>
+      </div>
+      <div class="adv-field">
+        <label for="filtroStatus">Status</label>
+        <select id="filtroStatus"><option value="">Todos</option></select>
+      </div>
+    </div>
+    <footer class="adv-footer">
+      <button id="clearAdvancedFilters" class="btn clear-adv"><i class="fa-solid fa-eraser"></i> Limpar</button>
+      <button id="applyAdvancedFilters" class="btn btn-primary apply-adv"><i class="fa-solid fa-check"></i> Aplicar</button>
+    </footer>
+  </div>
+</div>
+<div class="clientes-scroll-area">
+  <div id="analytics-panels">
+  <div class="panel" id="panel-consultor">
+    <h3 class="panel-title"><i class="fa-solid fa-user-tie"></i> Clientes por Consultor (filtrados)</h3>
+    <ul id="lista-consultor"></ul>
+  </div>
+  <div class="panel" id="panel-status-filtrado">
+    <h3 class="panel-title"><i class="fa-solid fa-layer-group"></i> Status (filtrados)</h3>
+    <ul id="lista-status-filtrado"></ul>
+  </div>
+  <div class="panel" id="panel-maquina">
+    <h3 class="panel-title"><i class="fa-solid fa-gears"></i> Total por Máquina (filtrados)</h3>
+    <ul id="lista-maquina"></ul>
+  </div>
+  </div>
+  <div id="clientes-list" class="clientes-list"></div>
+  <div id="empty-clients" class="empty-state" style="display:none;">
+  <p id="empty-clients-msg">Nenhum cliente encontrado.</p>
+  <button id="clearFilters" class="btn btn-primary"><i class="fa-solid fa-filter-circle-xmark"></i> Limpar filtros</button>
+  </div>
+  <div id="pagination" class="pagination-bar"></div>
+</div>

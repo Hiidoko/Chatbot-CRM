@@ -1,0 +1,31 @@
+	<!-- Partial: Consultores -->
+	<div class="consultores-toolbar">
+		<button id="consultores-search-toggle" class="consultores-search-btn" aria-expanded="false" aria-controls="consultores-search-panel" title="Buscar / Filtrar">
+			<i class="fa-solid fa-magnifying-glass"></i>
+		</button>
+		<div id="consultores-search-panel" class="consultores-search-panel" hidden>
+			<div class="consultores-search-row">
+				<input type="text" id="consultores-search-input" placeholder="Buscar..." aria-label="Buscar consultor" />
+				<select id="consultores-search-field" aria-label="Campo de filtragem">
+					<option value="nome">Nome</option>
+					<option value="cidade">Endereço (Cidade)</option>
+					<option value="especialidade">Máquina (Especialidade)</option>
+				</select>
+				<button id="consultores-search-clear" class="consultores-clear-btn" title="Limpar busca"><i class="fa-solid fa-xmark"></i></button>
+			</div>
+		</div>
+	</div>
+	<div id="consultores-list" class="consultores-list"></div>
+	<section id="consultores-clientes-panel" class="consultores-clientes-panel is-hidden" aria-live="polite" aria-hidden="true">
+		<header class="consultores-clientes-header">
+			<div class="consultores-clientes-heading">
+				<h3 id="consultores-clientes-title">Clientes do consultor selecionado</h3>
+				<span id="consultores-clientes-count" class="consultores-clientes-count"></span>
+			</div>
+			<button id="consultores-clientes-close" class="btn btn-ghost consultores-clientes-close" type="button" aria-label="Fechar painel de clientes">
+				<i class="fa-solid fa-xmark" aria-hidden="true"></i>
+			</button>
+		</header>
+		<p id="consultores-clientes-empty" class="consultores-clientes-empty">Selecione um consultor para listar os clientes vinculados.</p>
+		<ul id="consultores-clientes-list" class="consultores-clientes-list"></ul>
+	</section>

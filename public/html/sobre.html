@@ -1,0 +1,57 @@
+<!-- Partial: Sobre -->
+<div id="sobre-content" class="sobre-content">
+  <div class="sobre-box sobre-rich">
+    <div class="sobre-scroll" id="sobre-scroll">
+      <header class="sobre-header">
+        <h2 class="sobre-title" data-i18n="sobre.titulo"><i class="fa-solid fa-circle-info"></i> <span>Sobre o Projeto</span></h2>
+        <div class="sobre-meta" id="sobre-meta-version" aria-live="polite"></div>
+      </header>
+      <p class="sobre-paragrafo" data-i18n="sobre.intro">Este aplicativo CRM + Chatbot foi desenvolvido exclusivamente como <strong>material de estudo e portfólio</strong>, demonstrando práticas modernas de desenvolvimento <strong>Full Stack JavaScript</strong> (Node.js no backend e ES Modules no frontend). Não utiliza dados reais de clientes e <strong>não deve ser usado em produção</strong> sem antes passar por revisões de segurança, arquitetura de dados, testes automatizados mais robustos e implantação adequada.</p>
+      <section class="sobre-section">
+        <h3 class="sobre-subtitle" data-i18n="sobre.resumo"><i class="fa-solid fa-bullseye"></i> Resumo da Aplicação</h3>
+        <p class="sobre-paragrafo" data-i18n="sobre.resumoTexto">Um protótipo de CRM integrado a um widget de chatbot para registro e gestão de leads: inclui cadastro e atualização de clientes (modal e edição inline), filtros avançados com busca unificada, paginação e ordenação flexíveis, métricas derivadas em tempo real, painel analítico resumido e feedback de interface moderno (toasts, confirmações customizadas, animações com respeito à acessibilidade). O objetivo é demonstrar organização modular (backend Express + camadas de validação/normalização) e domínio de manipulação direta de DOM no frontend com ES Modules, sem dependência de frameworks pesados.</p>
+      </section>
+      <section class="sobre-section">
+        <h3 class="sobre-subtitle" data-i18n="sobre.tecnologias"><i class="fa-solid fa-gears"></i> Tecnologias & Métodos</h3>
+  <p class="sobre-paragrafo" data-i18n="sobre.tecnologiasTexto">Stack baseada em <strong>Node.js + Express</strong> (backend) e abordagem de <strong>SPA leve sem framework</strong> no frontend, reforçando domínio de DOM, organização modular e ciclo de vida de componentes sem abstrações pesadas. Ênfase em princípios como <em>Single Responsibility</em>, reutilização de validações entre camadas e separação de preocupações visando evolutividade (tests e REST API).</p>
+  <div class="sobre-tech-grid">
+    <article class="sobre-tech-card">
+    <span class="sobre-tech-icon" aria-hidden="true"><i class="fa-solid fa-server"></i></span>
+    <h4 class="sobre-tech-title" data-i18n="sobre.tecnologiasBackend">Backend orientado a serviços</h4>
+    <p class="sobre-tech-text" data-i18n="sobre.tecnologiasBackendDesc">API Express enxuta com camadas de modelo e validação compartilhadas com o frontend, facilitando evolução para integrações REST ou GraphQL.</p>
+    </article>
+    <article class="sobre-tech-card">
+    <span class="sobre-tech-icon" aria-hidden="true"><i class="fa-solid fa-laptop-code"></i></span>
+    <h4 class="sobre-tech-title" data-i18n="sobre.tecnologiasFrontend">Frontend modular em ES Modules</h4>
+    <p class="sobre-tech-text" data-i18n="sobre.tecnologiasFrontendDesc">SPA sem frameworks pesados, controle direto do DOM, eventos customizados para sincronizar views e widgets acoplados de forma progressiva.</p>
+    </article>
+    <article class="sobre-tech-card">
+    <span class="sobre-tech-icon" aria-hidden="true"><i class="fa-solid fa-shield-heart"></i></span>
+    <h4 class="sobre-tech-title" data-i18n="sobre.tecnologiasQualidade">Qualidade e experiência</h4>
+    <p class="sobre-tech-text" data-i18n="sobre.tecnologiasQualidadeDesc">Validações reutilizadas, estados acessíveis, microinterações e feedback instantâneo (toasts, confirmações, animações) para UX responsiva em qualquer dispositivo.</p>
+    </article>
+  </div>
+  <div class="sobre-tech-tags">
+    <span class="tech-pill" data-i18n="sobre.techPillNode"><i class="fa-brands fa-node-js" aria-hidden="true"></i> Node.js 18+</span>
+    <span class="tech-pill" data-i18n="sobre.techPillExpress"><i class="fa-solid fa-network-wired" aria-hidden="true"></i> Express 5</span>
+    <span class="tech-pill" data-i18n="sobre.techPillModules"><i class="fa-solid fa-puzzle-piece" aria-hidden="true"></i> ES Modules</span>
+    <span class="tech-pill" data-i18n="sobre.techPillA11y"><i class="fa-solid fa-universal-access" aria-hidden="true"></i> Acessibilidade</span>
+    <span class="tech-pill" data-i18n="sobre.techPillUX"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> UX Responsiva</span>
+  </div>
+      </section>
+      <section class="sobre-section">
+        <h3 class="sobre-subtitle" data-i18n="sobre.conheca"><i class="fa-solid fa-handshake-angle"></i> Conheça-nos</h3>
+        <p class="sobre-paragrafo" data-i18n="sobre.conhecaTexto">Links para contato e acompanhamento de outros projetos:</p>
+        <ul class="sobre-links" data-i18n="sobre.links">
+          <li><i class="fa-brands fa-linkedin"></i> <span>LinkedIn:</span> <a href="http://linkedin.com/in/hiidoko" target="_blank" rel="noopener">linkedin.com/in/hiidoko</a></li>
+          <li><i class="fa-brands fa-github"></i> <span>GitHub:</span> <a href="https://github.com/Hiidoko" target="_blank" rel="noopener">github.com/Hiidoko</a></li>
+        </ul>
+      </section>
+      <p class="sobre-disclaimer" data-i18n="sobre.disclaimer">Este repositório existe para fins educacionais e demonstração de competências. Qualquer semelhança com dados reais é coincidência.</p>
+    </div>
+    <div class="sobre-i18n-switch">
+      <button id="langPt" class="btn btn-ghost" data-lang="pt" aria-pressed="true">PT-BR</button>
+      <button id="langEn" class="btn btn-ghost" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</div>

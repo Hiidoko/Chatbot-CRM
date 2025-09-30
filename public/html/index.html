@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM - Início</title>
+    <link rel="stylesheet" href="/styles/crm-core.css">
+    <link rel="stylesheet" href="/styles/crm-sobre.css">
+    <link rel="stylesheet" href="/styles/crm-chatbot-shell.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+    <div class="crm-layout">
+        <aside class="crm-sidebar" aria-label="Navegação principal">
+            <div class="sidebar-logo">
+                <i class="fa-solid fa-headset" aria-hidden="true"></i>
+                <span>CRM Chatbot</span>
+            </div>
+            <nav aria-label="Seções">
+                <ul role="menu">
+                    <li id="menu-clientes" class="active" role="menuitem" tabindex="0">
+                        <i class="fa-solid fa-users" aria-hidden="true"></i>
+                        <span>Clientes</span>
+                    </li>
+                    <li id="menu-consultores" role="menuitem" tabindex="0">
+                        <i class="fa-solid fa-user-tie" aria-hidden="true"></i>
+                        <span>Consultores</span>
+                    </li>
+                    <li id="menu-sobre" role="menuitem" tabindex="0">
+                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                        <span>Sobre</span>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-user" aria-hidden="true">
+                <i class="fa-solid fa-circle-user"></i>
+                <div>
+                    <strong>Equipe CRM</strong>
+                    <small>Ambiente demo</small>
+                </div>
+            </div>
+        </aside>
+
+        <div class="crm-main">
+            <header class="crm-header-top">
+                <h1>Painel Administrativo</h1>
+                <div class="crm-header-actions">
+                    <button id="addClientBtn" class="btn btn-primary" type="button">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                        <span>Novo Cliente</span>
+                    </button>
+                </div>
+            </header>
+
+            <main id="app" aria-live="polite">
+                <div id="view-root"></div>
+            </main>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Editar Cliente</h2>
+            <div id="validation-summary" class="validation-summary" aria-live="assertive" aria-atomic="true" style="display:none"></div>
+            <label>Nome:</label>
+            <input type="text" id="editNome">
+            <label>E-mail:</label>
+            <input type="text" id="editEmail">
+            <label>Telefone:</label>
+            <input type="text" id="editTelefone">
+            <label>Cidade:</label>
+            <input type="text" id="editCidade">
+            <label>Máquina:</label>
+            <input type="text" id="editMaquina">
+            <label>Horário:</label>
+            <input type="text" id="editHorario">
+            <label>Status:</label>
+            <select id="editStatus">
+                <option value="novo">Novo</option>
+                <option value="em andamento">Em andamento</option>
+                <option value="contatado">Contatado</option>
+                <option value="convertido">Convertido</option>
+                <option value="perdido">Perdido</option>
+            </select>
+            <div class="modal-buttons">
+                <button id="saveEdit">Salvar</button>
+                <button id="cancelEdit">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="chatbot-widget">
+        <button id="open-chatbot" aria-label="Abrir chatbot" aria-expanded="false" title="Abrir Chatbot" class="chatbot-fab">
+            <span class="visually-hidden">Abrir Chatbot</span>
+            <i class="fa-solid fa-robot chatbot-fab-icon" aria-hidden="true"></i>
+            <span class="fab-glow" aria-hidden="true"></span>
+        </button>
+        <div id="chatbot-popup" style="display:none;">
+            <iframe src="/html/chatbot.html" frameborder="0" id="chatbot-iframe" title="Chatbot"></iframe>
+        </div>
+    </div>
+
+    <div class="toast-container" id="crm-toast-container" aria-live="polite" aria-atomic="false"></div>
+    <script type="module" src="/js/crm/index.js"></script>
+</body>
+</html>
