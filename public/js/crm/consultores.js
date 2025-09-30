@@ -109,6 +109,11 @@ export function initConsultoresSearch(container, renderLista) {
   const clearBtn = document.getElementById('consultores-search-clear');
   if (!toggleBtn || !panel || !input || !fieldSelect) return;
 
+  // Forçar estado inicial oculto (independente de histórico de navegação)
+  panel.hidden = true;
+  panel.style.display = 'none';
+  toggleBtn.setAttribute('aria-expanded','false');
+
   function aplicar() {
     if (typeof renderLista === 'function') {
       renderLista({ termo: input.value.trim(), campo: fieldSelect.value });

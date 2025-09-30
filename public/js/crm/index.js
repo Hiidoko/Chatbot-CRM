@@ -149,6 +149,7 @@ let analyticsPanelsEl = null;
 let emptyStateEl = null;
 let emptyMsgEl = null;
 let clearFiltersBtn = null;
+let consultoresSearchToggleOriginalParent = null;
 const CLIENTES_EVENT = 'crm:clientes-atualizados';
 
 function notificarClientesAtualizados() {
@@ -813,6 +814,20 @@ async function showSection(section, opts = {}) {
   const valid = ['clientes','consultores','sobre'];
   if (!valid.includes(section)) section = 'clientes';
   await swapView(section);
+  // Garantir que o botão de busca de consultores não 'vaze' para outras seções
+  if (section !== 'consultores') {
+    const straySearchToggle = document.getElementById('consultores-search-toggle');
+    if (straySearchToggle) {
+      // Se ele estiver dentro das ações do header global, removemos do DOM;
+      // ao voltar para consultores o HTML original (consultores.html) recria o botão.
+      if (straySearchToggle.parentElement && straySearchToggle.parentElement.classList.contains('crm-header-actions')) {
+        straySearchToggle.remove();
+      }
+    }
+    // Remove classe de layout especial caso tenha sido aplicada
+    const headerActions = document.querySelector('.crm-header-actions.consultores-actions-inline');
+    if (headerActions) headerActions.classList.remove('consultores-actions-inline');
+  }
   const targetMenu = menuItems.find(m=>m.id==='menu-'+section);
   if (targetMenu) setActiveMenu(targetMenu);
   if (isMobileSidebarMode()) setSidebarState('collapsed');
@@ -839,6 +854,30 @@ async function showSection(section, opts = {}) {
     } else if (section === 'consultores') {
       addClientBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Adicionar Consultor';
       addClientBtn.onclick = () => abrirModalNovoConsultor && abrirModalNovoConsultor();
+      // Reposicionar botão de busca (lupa) ao lado do botão principal em mobile
+      try {
+        const searchToggle = document.getElementById('consultores-search-toggle');
+        if (searchToggle) {
+          const isMobile = window.matchMedia('(max-width: 768px)').matches;
+          if (isMobile) {
+            if (!consultoresSearchToggleOriginalParent) {
+              consultoresSearchToggleOriginalParent = searchToggle.parentElement;
+            }
+            // Envolver em um container flex se necessário
+            const headerActions = addClientBtn.parentElement;
+            if (headerActions && !headerActions.classList.contains('consultores-actions-inline')) {
+              headerActions.classList.add('consultores-actions-inline');
+            }
+            if (headerActions && headerActions !== searchToggle.parentElement) {
+              headerActions.insertBefore(searchToggle, addClientBtn.nextSibling);
+              searchToggle.style.display = ''; // garantir visível em mobile consultores
+            }
+          } else if (consultoresSearchToggleOriginalParent && searchToggle.parentElement !== consultoresSearchToggleOriginalParent) {
+            consultoresSearchToggleOriginalParent.appendChild(searchToggle);
+            searchToggle.style.display = ''; // desktop dentro da própria toolbar
+          }
+        }
+      } catch(e) { /* silencioso */ }
     }
   }
   localStorage.setItem('crm-active-section', section);

@@ -16,7 +16,10 @@
     <div id="messages"></div>
     <div id="input-container">
       <input id="userInput" type="text" placeholder="Digite sua mensagem...">
-      <button id="sendBtn">Enviar</button>
+      <button id="sendBtn" aria-label="Enviar mensagem">
+        <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+        <span class="btn-label">Enviar</span>
+      </button>
     </div>
   </div>
   <script type="module" src="/js/chatbot/index.js"></script>
