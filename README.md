@@ -6,6 +6,33 @@ Aplicação full stack JavaScript que combina um mini CRM de leads com um widget
 
 O sistema permite captar, listar, filtrar, editar e analisar leads com uma interface leve (SPA sem frameworks pesados) e um fluxo de entrada via chatbot (iframe). Consultores são atribuídos automaticamente conforme a especialidade (máquina) informada pelo lead.
 
+## ⚙️ Configuração de Ambiente (.env)
+Crie um arquivo `.env` na raiz baseado em `.env.example`:
+
+```
+MONGO_URL="mongodb+srv://usuario:senha@cluster.mongodb.net/?retryWrites=true&w=majority&appName=data"
+MONGO_DB="chatbotcrm"
+PORT=3000
+NODE_ENV=development
+LOG_LEVEL=debug
+QUIET=0
+JWT_SECRET="coloque-um-segredo-forte-aqui"
+JWT_EXPIRES="2h"
+DISABLE_DEFAULT_USER=0
+```
+
+Notas:
+- `MONGO_URL` é obrigatório. Sem ela o processo encerra com erro.
+- Gere um segredo forte para `JWT_SECRET` (ex: `openssl rand -base64 48`).
+- Defina `DISABLE_DEFAULT_USER=1` para NÃO criar o usuário demo (`user@email.com` / senha `user`).
+- Em produção, ajuste `secure: true` no cookie (ver `authController.js`).
+- Use `LOG_LEVEL=info` ou `warn` em produção para reduzir ruído.
+
+Adicionar ao `.gitignore` (se ainda não estiver):
+```
+.env
+```
+
 ## ✨ Principais Recursos
 
 - Cadastro e edição de clientes (modal ou edição inline)
