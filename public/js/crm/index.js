@@ -27,6 +27,8 @@ let sortBySelect = null;
 let pageSizeSelect = null;
 let paginationBar = null;
 const addClientBtn = document.getElementById('addClientBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const userInfoBox = document.getElementById('userInfo');
 const editModal = document.getElementById('editModal');
 const modalTitle = document.getElementById('modalTitle');
 const saveEditBtn = document.getElementById('saveEdit');
@@ -47,6 +49,11 @@ const SIDEBAR_EXPANDED_CLASS = 'sidebar-expanded';
 const SIDEBAR_MEDIA_QUERY = '(max-width: 768px)';
 const sidebarMediaQuery = window.matchMedia(SIDEBAR_MEDIA_QUERY);
 let navMenuItems = [];
+const SIDEBAR_STATE_KEY='crm:sidebar-state';
+// Restaura estado colapsado/expandido (somente mobile)
+const savedSidebarState = localStorage.getItem(SIDEBAR_STATE_KEY);
+if(savedSidebarState==='expanded') document.body.classList.add(SIDEBAR_EXPANDED_CLASS);
+if(savedSidebarState==='collapsed') document.body.classList.add(SIDEBAR_COLLAPSED_CLASS);
 let sidebarOverlayHideTimeout = null;
 
 function isMobileSidebarMode() {
@@ -93,6 +100,8 @@ function setSidebarState(state) {
       }, 220);
     }
   }
+  // Persiste
+  try { localStorage.setItem(SIDEBAR_STATE_KEY, state); } catch {}
   updateSidebarAccessibility();
 }
 
@@ -138,6 +147,206 @@ sidebarOverlay?.addEventListener('click', () => {
   setSidebarState('collapsed');
   sidebarToggleBtn?.focus();
 });
+
+// Logout + enhancements (confirm dialog animado, tooltip persistente, avatar & polling user)
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    const confirmed = await (async ()=> new Promise(res => {
+      const wrap = document.createElement('div');
+      wrap.className='confirm-dialog-backdrop';
+      wrap.innerHTML = `<div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="lg-title">
+        <h3 id="lg-title">Confirmar Logout</h3>
+        <p>Deseja realmente encerrar a sessão?</p>
+        <div class="confirm-actions">
+          <button type="button" data-act="cancel" class="btn btn-ghost">Cancelar</button>
+          <button type="button" data-act="ok" class="btn btn-danger">Sair</button>
+        </div>
+      </div>`;
+      document.body.appendChild(wrap);
+      const dialog = wrap.querySelector('.confirm-dialog');
+      dialog.style.animation='dialogIn .22s ease';
+      const done = (v)=>{
+        if (dialog) {
+          dialog.style.animation='dialogOut .22s forwards ease';
+          wrap.style.animation='fadeBackdrop .25s forwards ease';
+          setTimeout(()=> wrap.remove(), 210);
+        } else wrap.remove();
+        res(v);
+      };
+      wrap.addEventListener('click', e=>{ if(e.target===wrap) done(false); });
+      wrap.querySelector('[data-act="cancel"]').onclick=()=>done(false);
+      wrap.querySelector('[data-act="ok"]').onclick=()=>done(true);
+      const escHandler = (e)=>{ if(e.key==='Escape'){ done(false); window.removeEventListener('keydown', escHandler);} };
+      window.addEventListener('keydown', escHandler);
+    }))();
+    if (!confirmed) return;
+    try { await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); } catch {}
+    window.location.href = '/';
+  });
+}
+
+// (Botão de logout removido) – código de tooltip legado eliminado
+
+let lastUserHash='';
+async function carregarUsuarioAtual(){
+  if(!userInfoBox) return;
+  try {
+    const r = await fetch('/api/auth/me', { credentials:'include' });
+    if(!r.ok) return;
+    const { user } = await r.json(); if(!user) return;
+    const nome = user.nome || 'Usuário'; const email = user.email || '';
+    const avatar = nome.trim().charAt(0).toUpperCase();
+    const html = `<div class="user-mini" style="display:flex;align-items:center;gap:.55rem;cursor:pointer;" data-user-menu="1">
+      <div class="user-avatar" aria-hidden="true">${avatar}</div>
+      <div class="user-meta" style="display:flex;flex-direction:column;align-items:flex-start;">
+        <strong>${nome}</strong>
+        <span>${email}</span>
+      </div>
+    </div>`;
+    const hash = nome+'|'+email;
+    if (hash !== lastUserHash) { userInfoBox.innerHTML = html; lastUserHash = hash; }
+    inicializarUserInteractions(nome,email);
+    userInfoBox.dataset.loaded='1';
+  } catch(err) { console.error('[CRM] Falha ao carregar usuário atual', err); }
+}
+carregarUsuarioAtual();
+setInterval(carregarUsuarioAtual, 30000).unref?.();
+
+let userTooltipEl=null; let userMenuEl=null; let userTooltipTimer=null;
+const USER_TOOLTIP_HIDE_KEY='crm:hideUserTooltip';
+function showUserTooltip(target,nome,email){
+  // Exibir tooltip quando sidebar colapsada (mobile) ou se futuramente houver modo colapsado desktop
+  const sidebarCollapsed = document.body.classList.contains(SIDEBAR_COLLAPSED_CLASS) || (isMobileSidebarMode() && !document.body.classList.contains(SIDEBAR_EXPANDED_CLASS));
+  if(!sidebarCollapsed) return;
+  if(localStorage.getItem(USER_TOOLTIP_HIDE_KEY)==='1') return;
+  hideUserTooltip();
+  userTooltipEl=document.createElement('div');
+  userTooltipEl.className='user-tooltip';
+  userTooltipEl.innerHTML=`<strong style=\"display:block;font-size:.65rem;letter-spacing:.5px;margin-bottom:2px;\">${nome}</strong>
+    <span style=\"font-size:.6rem;opacity:.75;word-break:break-all;\">${email}</span>
+    <button type=\"button\" data-act=\"never\" style=\"margin-top:6px;background:#374151;border:1px solid rgba(255,255,255,.1);color:#fff;font-size:.55rem;padding:4px 6px;border-radius:6px;cursor:pointer;display:inline-flex;gap:4px;align-items:center;\">Não mostrar de novo</button>`;
+  document.body.appendChild(userTooltipEl);
+  const r=target.getBoundingClientRect();
+  userTooltipEl.style.top=(r.top-8)+'px';
+  userTooltipEl.style.left=(r.left + r.width/2)+'px';
+  userTooltipEl.style.transform='translate(-50%, -100%)';
+  userTooltipTimer=setTimeout(()=> hideUserTooltip(), 6000);
+  userTooltipEl.querySelector('[data-act="never"]').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    try { localStorage.setItem(USER_TOOLTIP_HIDE_KEY,'1'); } catch {}
+    hideUserTooltip();
+  });
+}
+function hideUserTooltip(){ if(userTooltipEl){ userTooltipEl.remove(); userTooltipEl=null; } if(userTooltipTimer){ clearTimeout(userTooltipTimer); userTooltipTimer=null; } }
+
+function toggleUserMenu(target,nome,email){
+  console.debug('[CRM] toggleUserMenu invoked', { hasMenu: !!userMenuEl });
+  if(userMenuEl){ hideUserMenu(); return; }
+  userMenuEl=document.createElement('div');
+  userMenuEl.className='user-menu';
+  userMenuEl.innerHTML=`<ul>
+    <li data-act="perfil"><i class=\"fa-solid fa-id-card\"></i> Perfil</li>
+    <li data-act="refresh"><i class=\"fa-solid fa-rotate\"></i> Atualizar sessão</li>
+    <li class="danger" data-act="logout"><i class=\"fa-solid fa-right-from-bracket\"></i> Sair</li>
+  </ul>`;
+  document.body.appendChild(userMenuEl);
+  positionUserMenu(target);
+  const onClick=(e)=>{
+    const act=e.target.closest('li')?.dataset?.act;
+    if(act==='logout'){ confirmarLogoutMenu(); }
+    else if(act==='refresh'){ carregarUsuarioAtual(); }
+    else if(act==='perfil'){ window.location.href='/perfil'; }
+    hideUserMenu();
+  };
+  userMenuEl.addEventListener('click', onClick, { once:false });
+  window.addEventListener('click', outsideHandler, { capture:true, once:false });
+  window.addEventListener('keydown', escHandler);
+  function outsideHandler(ev){ if(!userMenuEl) return; if(!userMenuEl.contains(ev.target) && !target.contains(ev.target)){ hideUserMenu(); } }
+  function escHandler(ev){ if(ev.key==='Escape'){ hideUserMenu(); } }
+  function hideUserMenu(){
+    if(!userMenuEl) return;
+    userMenuEl.remove(); userMenuEl=null;
+    window.removeEventListener('click', outsideHandler, { capture:true });
+    window.removeEventListener('keydown', escHandler);
+  }
+}
+function positionUserMenu(target){
+  if(!userMenuEl) return;
+  const r=target.getBoundingClientRect();
+  userMenuEl.style.top=(r.top + r.height + 8)+'px';
+  userMenuEl.style.left=(r.left + Math.min(r.width,180)/2)+'px';
+  userMenuEl.style.transform='translate(-50%,0)';
+}
+window.addEventListener('resize', ()=> { if(userMenuEl){ positionUserMenu(userInfoBox); } });
+// Fallback de delegação para garantir abertura do menu em casos de falha de binding direto
+userInfoBox?.addEventListener('click', (e)=>{
+  const mini = userInfoBox.querySelector('.user-mini');
+  if(!mini) return;
+  if(e.target.closest('.user-mini')){
+    const nome = mini.querySelector('strong')?.textContent || 'Usuário';
+    const email = mini.querySelector('span')?.textContent || '';
+    toggleUserMenu(mini,nome,email);
+  }
+});
+if(!window.__crmUserGlobalDelegation){
+  window.__crmUserGlobalDelegation=true;
+  document.addEventListener('click',(e)=>{
+    const trigger = e.target.closest('.user-mini');
+    if(!trigger) return;
+    if(!trigger.parentElement || trigger.parentElement.id!=='userInfo') return;
+    const nome = trigger.querySelector('strong')?.textContent || 'Usuário';
+    const email = trigger.querySelector('span')?.textContent || '';
+    toggleUserMenu(trigger,nome,email);
+  });
+}
+
+function inicializarUserInteractions(nome,email){
+  const mini = userInfoBox.querySelector('.user-mini'); if(!mini) return;
+  const avatarEl = mini.querySelector('.user-avatar');
+  console.debug('[CRM] inicializarUserInteractions found mini, binding events');
+  mini.onmouseenter=()=> showUserTooltip(mini,nome,email);
+  mini.onmouseleave=()=> hideUserTooltip();
+  mini.onclick=(e)=> { e.stopPropagation(); toggleUserMenu(mini,nome,email); };
+  mini.onkeydown=(e)=> { if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleUserMenu(mini,nome,email);} };
+  mini.setAttribute('tabindex','0');
+  mini.setAttribute('role','button');
+  mini.setAttribute('aria-label','Abrir menu do usuário');
+}
+
+async function confirmarLogoutMenu(){
+  // Reuso do padrão de confirmação animada já existente (mesmo approach do botão logout removido)
+  const confirmed = await (async ()=> new Promise(res => {
+    const wrap = document.createElement('div');
+    wrap.className='confirm-dialog-backdrop';
+    wrap.innerHTML = `<div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="lg-title">
+      <h3 id="lg-title">Confirmar Logout</h3>
+      <p>Deseja realmente encerrar a sessão?</p>
+      <div class="confirm-actions">
+        <button type="button" data-act="cancel" class="btn btn-ghost">Cancelar</button>
+        <button type="button" data-act="ok" class="btn btn-danger">Sair</button>
+      </div>
+    </div>`;
+    document.body.appendChild(wrap);
+    const dialog = wrap.querySelector('.confirm-dialog');
+    dialog.style.animation='dialogIn .22s ease';
+    const done = (v)=>{
+      if (dialog) {
+        dialog.style.animation='dialogOut .22s forwards ease';
+        wrap.style.animation='fadeBackdrop .25s forwards ease';
+        setTimeout(()=> wrap.remove(), 210);
+      } else wrap.remove();
+      res(v);
+    };
+    wrap.addEventListener('click', e=>{ if(e.target===wrap) done(false); });
+    wrap.querySelector('[data-act="cancel"]').onclick=()=>done(false);
+    wrap.querySelector('[data-act="ok"]').onclick=()=>done(true);
+    const escHandler = (e)=>{ if(e.key==='Escape'){ done(false); window.removeEventListener('keydown', escHandler);} };
+    window.addEventListener('keydown', escHandler);
+  }))();
+  if(!confirmed) return;
+  try { await fetch('/api/auth/logout',{method:'POST',credentials:'include'}); } catch {}
+  window.location.href='/';
+}
 
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && isMobileSidebarMode() && document.body.classList.contains(SIDEBAR_EXPANDED_CLASS)) {

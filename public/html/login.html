@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Autenticação • CRM Chatbot</title>
+  <meta name="color-scheme" content="dark light">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
+              400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    .glass{background:linear-gradient(140deg,rgba(255,255,255,.10),rgba(255,255,255,.04));backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.12);} 
+    .input-base{width:100%;padding:.85rem 1rem;border-radius:.75rem;background:rgba(17,25,40,.65);border:1px solid rgba(255,255,255,.08);color:#f1f5f9;font-size:.9rem;transition:.25s;border-bottom-width:2px} 
+    .input-base:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.35);} 
+    .mode-switch{position:absolute;top:1rem;right:1rem;font-size:.55rem;letter-spacing:.1em;font-weight:600;padding:.4rem .75rem;border-radius:2rem;background:rgba(255,255,255,.08);color:#e2e8f0;cursor:pointer;transition:.25s;} .mode-switch:hover{background:rgba(255,255,255,.14);} 
+    .btn-primary{background:#2563eb;color:#fff;padding:.85rem 1rem;font-weight:600;border-radius:.75rem;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;gap:.6rem;box-shadow:0 4px 18px -4px rgba(37,99,235,.55);transition:.25s;} .btn-primary:hover{background:#1d4ed8;} 
+    .btn-ghost{background:rgba(255,255,255,.07);color:#f1f5f9;font-weight:600;border-radius:.75rem;font-size:.75rem;padding:.85rem 1rem;transition:.25s;} .btn-ghost:hover{background:rgba(255,255,255,.12);} 
+    .error-box{min-height:20px;font-size:.7rem;color:#f87171;font-weight:500;white-space:pre-line;} .success-box{min-height:20px;font-size:.7rem;color:#22c55e;font-weight:500;} 
+    .pw-toggle{position:absolute;right:.65rem;top:50%;transform:translateY(-50%);cursor:pointer;font-size:.75rem;color:#94a3b8;} .pw-toggle:hover{color:#e2e8f0;} 
+  </style>
+  </head>
+<body class="h-full min-h-screen bg-[#0f172a] flex items-center justify-center p-6 text-slate-100 relative overflow-hidden">
+  <div class="pointer-events-none absolute inset-0 opacity-[0.4] mix-blend-screen">
+    <div class="absolute -top-32 -left-24 w-[520px] h-[520px] bg-brand-600/40 rounded-full blur-[140px]"></div>
+    <div class="absolute bottom-[-160px] right-[-160px] w-[640px] h-[640px] bg-fuchsia-600/40 rounded-full blur-[150px]"></div>
+  </div>
+  <main class="w-full max-w-5xl grid lg:grid-cols-12 gap-10 items-center relative">
+    <section class="hidden lg:flex lg:col-span-6 flex-col gap-8 animate-[fadeUp_.55s_ease]">
+      <div class="space-y-6">
+        <div class="inline-flex items-center gap-2 bg-slate-800/40 border border-slate-700/60 px-3 py-1 rounded-full text-[11px] tracking-wider uppercase font-semibold text-slate-300">CRM Chatbot</div>
+        <h1 class="text-4xl xl:text-5xl font-bold leading-tight text-white drop-shadow-sm">Painel Unificado<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-fuchsia-400 to-brand-300">para Leads & Conversas</span></h1>
+        <p class="text-slate-300/90 max-w-md leading-relaxed text-sm">Ambiente demonstrativo de CRM com Chatbot integrado, validação compartilhada e UI acessível. Explore, teste, adapte.</p>
+      </div>
+      <ul class="grid grid-cols-2 gap-4 text-xs text-slate-300/80 max-w-lg">
+        <li class="flex items-start gap-2"><span class="text-brand-400 mt-[2px]">✔</span><span>Validação unificada</span></li>
+        <li class="flex items-start gap-2"><span class="text-brand-400 mt-[2px]">✔</span><span>Atribuição de consultor</span></li>
+        <li class="flex items-start gap-2"><span class="text-brand-400 mt-[2px]">✔</span><span>Camada de normalização</span></li>
+        <li class="flex items-start gap-2"><span class="text-brand-400 mt-[2px]">✔</span><span>Acessível / Keyboard friendly</span></li>
+      </ul>
+    </section>
+    <section class="lg:col-span-6 flex flex-col">
+      <div class="glass rounded-2xl p-8 md:p-10 shadow-xl relative overflow-hidden animate-[fadeUp_.55s_ease]" id="authPanel">
+        <button id="switchMode" type="button" class="mode-switch" aria-live="polite">Registrar</button>
+        <div class="mb-7 space-y-2">
+          <h2 id="auth-title" class="text-2xl font-bold tracking-tight">Login</h2>
+          <p class="text-[12px] text-slate-400" id="auth-sub">Entre para acessar o painel administrativo.</p>
+        </div>
+        <form id="authForm" class="space-y-5">
+          <div class="field" data-field="nome" style="display:none">
+            <label for="nome" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 pl-1">Nome</label>
+            <input id="nome" name="nome" type="text" autocomplete="name" class="input-base" placeholder="Seu nome" />
+          </div>
+            <div class="field" data-field="email">
+              <label for="email" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 pl-1">E-mail</label>
+              <input id="email" name="email" type="email" autocomplete="email" required class="input-base" placeholder="seuemail@dominio.com" />
+            </div>
+            <div class="field" data-field="senha">
+              <label for="senha" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 pl-1">Senha</label>
+              <div class="relative">
+                <input id="senha" name="senha" type="password" autocomplete="current-password" required class="input-base pr-10" placeholder="••••••••" />
+                <button type="button" id="togglePw" class="pw-toggle" tabindex="-1" aria-label="Mostrar ou ocultar senha">👁</button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-1">
+              <label class="flex items-center gap-2 text-[11px] text-slate-400 cursor-pointer select-none">
+                <input type="checkbox" id="rememberMode" class="accent-brand-500 rounded" />
+                Lembrar modo (Login/Registro)
+              </label>
+              <button type="button" id="fillDemo" class="text-[11px] text-brand-400 hover:text-brand-300 font-medium">Usar demo</button>
+            </div>
+            <div id="auth-feedback" class="error-box" aria-live="assertive"></div>
+            <div class="flex gap-3 pt-2">
+              <button id="submitBtn" class="btn-primary flex-1 relative" type="submit">
+                <span class="inline-flex items-center gap-2" id="submitLabel">Entrar</span>
+                <span class="hidden absolute inset-0 items-center justify-center" id="loadingSpinner">
+                  <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-30" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                </span>
+              </button>
+              <button id="resetBtn" class="btn-ghost" type="reset">Limpar</button>
+            </div>
+            <p class="text-[10px] text-slate-500 pt-2 leading-relaxed">Ambiente de demonstração. Não insira dados sensíveis reais.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="/js/auth/login.js"></script>
+  <script>
+    (function(){
+      const pwToggle = document.getElementById('togglePw');
+      const pwInput = document.getElementById('senha');
+      pwToggle.addEventListener('click', ()=> {
+        const t = pwInput.getAttribute('type')==='password' ? 'text' : 'password';
+        pwInput.setAttribute('type', t);
+        pwToggle.textContent = t==='password' ? '👁' : '🙈';
+      });
+      const remember = document.getElementById('rememberMode');
+      const switchBtn = document.getElementById('switchMode');
+      const savedMode = localStorage.getItem('authMode');
+      if (savedMode==='register') {
+        remember.checked = true;
+        window.setTimeout(()=> switchBtn.click(), 30);
+      }
+      switchBtn.addEventListener('click', ()=> {
+        if (remember.checked) {
+          localStorage.setItem('authMode', switchBtn.textContent==='Registrar' ? 'login' : 'register');
+        } else {
+          localStorage.removeItem('authMode');
+        }
+      });
+      document.getElementById('fillDemo').addEventListener('click', ()=> {
+        document.getElementById('email').value='user@email.com';
+        document.getElementById('senha').value='user';
+        document.getElementById('email').focus();
+      });
+    })();
+  </script>
+</body>
+</html>

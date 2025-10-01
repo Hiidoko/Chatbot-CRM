@@ -1,6 +1,7 @@
 const pino = require('pino');
 const isProd = process.env.NODE_ENV === 'production';
-const level = process.env.LOG_LEVEL || (isProd ? 'info' : 'debug');
+const quiet = process.env.QUIET === '1' || process.env.QUIET === 'true';
+const level = quiet ? 'fatal' : (process.env.LOG_LEVEL || (isProd ? 'info' : 'debug'));
 let logger;
 if (!isProd) {
   let transport;
@@ -14,5 +15,4 @@ if (!isProd) {
 } else {
   logger = pino({ level, base: { app: 'chatbot-crm' } });
 }
-module.exports = { logger };
 module.exports = { logger };

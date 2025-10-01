@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bem-vindo • CRM Chatbot</title>
+  <meta name="color-scheme" content="dark light" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme:{ extend:{ colors:{ brand:{50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a'} } } } };
+  </script>
+  <style>
+    .fade-in{animation:fade .65s ease forwards;} @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    .pulse-ring::before{content:'';position:absolute;inset:-18px;border:3px solid rgba(255,255,255,.08);border-radius:50%;animation:ring 2.8s linear infinite;}@keyframes ring{0%{transform:scale(.9);opacity:1;}70%{transform:scale(1.4);opacity:0;}100%{transform:scale(1.4);opacity:0;}}
+  </style>
+</head>
+<body class="h-full min-h-screen bg-[#0f172a] flex items-center justify-center p-6 text-slate-100 relative overflow-hidden">
+  <div class="pointer-events-none absolute inset-0 opacity-[0.35] mix-blend-screen">
+    <div class="absolute -top-40 -left-32 w-[560px] h-[560px] bg-brand-600/40 rounded-full blur-[140px]"></div>
+    <div class="absolute bottom-[-180px] right-[-180px] w-[680px] h-[680px] bg-fuchsia-600/40 rounded-full blur-[160px]"></div>
+  </div>
+  <main class="w-full max-w-xl mx-auto text-center space-y-10 fade-in relative">
+    <div class="relative inline-flex items-center justify-center w-40 h-40 rounded-full bg-gradient-to-br from-brand-500/30 via-brand-600/40 to-fuchsia-600/40 backdrop-blur-md border border-white/10 shadow-lg pulse-ring">
+      <svg viewBox="0 0 24 24" class="w-16 h-16 text-white/90 drop-shadow" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 12c2.21 0 4-1.567 4-3.5S14.21 5 12 5s-4 1.567-4 3.5S9.79 12 12 12Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 19.5a5.25 5.25 0 0 1 10.5 0v.25c0 .69-.56 1.25-1.25 1.25H8c-.69 0-1.25-.56-1.25-1.25v-.25Z" />
+      </svg>
+    </div>
+    <div class="space-y-4">
+      <h1 class="text-3xl font-bold tracking-tight">Bem-vindo</h1>
+      <p id="welcomeUser" class="text-sm text-slate-300"></p>
+      <p class="text-[13px] text-slate-400 max-w-md mx-auto leading-relaxed">Preparando o seu ambiente. Carregando dados iniciais e verificando sessão segura.</p>
+    </div>
+    <div class="flex flex-col items-center gap-4">
+      <div class="flex items-center gap-2 text-[11px] uppercase tracking-widest text-slate-400">
+        <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+        <span id="welcomeStatus">Iniciando...</span>
+      </div>
+      <div class="w-60 h-2 rounded-full bg-slate-800 overflow-hidden">
+        <div id="welcomeProgress" class="h-full w-0 bg-gradient-to-r from-brand-400 via-fuchsia-400 to-brand-300 transition-all duration-500 ease-out"></div>
+      </div>
+      <button id="skipBtn" type="button" class="text-[11px] text-brand-300 hover:text-brand-200 underline underline-offset-4">Ir agora para o painel</button>
+    </div>
+    <p class="text-[10px] text-slate-500">Dica: Você pode voltar aqui fazendo logout e entrando novamente.</p>
+  </main>
+  <script type="module" src="/js/auth/welcome.js"></script>
+</body>
+</html>

@@ -4,14 +4,8 @@ const { logger } = require('./utils/logger');
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
   const url = `http://localhost:${PORT}`;
-  logger.info({ port: PORT, env: process.env.NODE_ENV, url }, 'Servidor iniciado');
-  if (process.env.NODE_ENV !== 'production' && process.stdout.isTTY) {
-    // Linha amigável clicável no terminal
-    // Pode desativar definindo NO_PRETTY_START=1
-    if (!process.env.NO_PRETTY_START) {
-      console.log(`\n➡  Aplicação disponível em: ${url}\nCTRL+C para encerrar.\n`);
-    }
-  }
+  // Log único e enxuto
+  console.log(`Servidor iniciado em ${url}`);
 });
 
 server.on('error', (err) => {
@@ -32,14 +26,10 @@ server.on('error', (err) => {
 // Monitora sinais para logar encerramentos intencionais
 ['SIGINT','SIGTERM','SIGUSR2'].forEach(sig => {
   process.once(sig, () => {
-    logger.warn({ signal: sig }, 'Encerrando servidor (signal)');
+    console.log(`Encerrando (${sig})...`);
     server.close(() => process.exit(0));
   });
 });
 
 // Diagnóstico: loga a cada 30s que está vivo (remover em produção se quiser)
-if (process.env.NODE_ENV !== 'production') {
-  setInterval(() => {
-    if (server.listening) logger.debug({ uptime: process.uptime().toFixed(0) }, 'Heartbeat servidor');
-  }, 30000).unref();
-}
+// Removido heartbeat para saída mais limpa

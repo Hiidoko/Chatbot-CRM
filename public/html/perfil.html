@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Perfil • CRM Chatbot</title>
+  <link rel="stylesheet" href="/styles/crm-core.css" />
+  <link rel="stylesheet" href="/styles/crm-chatbot-shell.css" />
+  <style>
+    body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--color-bg);font-family:var(--font-base);} 
+    .perfil-card{background:#fff;border:1px solid var(--color-border);border-radius:18px;box-shadow:0 14px 48px -12px rgba(0,0,0,.18);padding:34px 38px;max-width:520px;width:92%;display:flex;flex-direction:column;gap:20px;}
+    .perfil-head{display:flex;align-items:center;gap:18px;}
+    .perfil-avatar{width:68px;height:68px;border-radius:50%;background:var(--color-primary-accent);display:flex;align-items:center;justify-content:center;font-size:1.7rem;font-weight:600;color:#fff;box-shadow:0 0 0 4px rgba(66,165,245,.2);} 
+    h1{margin:0;font-size:1.45rem;color:var(--color-primary);} 
+    .perfil-meta{display:flex;flex-direction:column;gap:4px;font-size:.8rem;font-weight:600;color:var(--color-text-soft);} 
+    .perfil-section{display:flex;flex-direction:column;gap:10px;background:var(--color-surface-alt);padding:16px 18px;border:1px solid var(--color-border-soft);border-radius:14px;} 
+    .perfil-section h2{margin:0;font-size:.75rem;letter-spacing:.6px;text-transform:uppercase;color:var(--color-text-soft);} 
+    .perfil-row{display:flex;flex-direction:column;gap:4px;font-size:.75rem;} 
+    .perfil-row label{font-size:.6rem;letter-spacing:.5px;text-transform:uppercase;font-weight:700;color:var(--color-text-soft);} 
+    .perfil-row input{padding:10px 12px;border:1px solid var(--color-border-soft);border-radius:10px;font-size:.75rem;background:var(--color-surface);} 
+    .perfil-row input:focus{outline:none;box-shadow:0 0 0 3px var(--color-focus-ring);} 
+    .perfil-actions{display:flex;justify-content:flex-end;gap:12px;padding-top:8px;} 
+    .avatar-large-initial{font-size:2rem;} 
+    .back-link{position:fixed;top:18px;left:18px;text-decoration:none;font-size:.7rem;font-weight:600;padding:10px 14px;border-radius:10px;background:#fff;border:1px solid var(--color-border-soft);color:var(--color-text-soft);} 
+    .back-link:hover{background:var(--color-surface-alt);color:var(--color-primary);} 
+  </style>
+</head>
+<body>
+  <a href="/app" class="back-link">← Voltar</a>
+  <div class="perfil-card" id="perfilCard" aria-live="polite">
+    <div class="perfil-head">
+      <div class="perfil-avatar" id="perfilAvatar" aria-hidden="true">?</div>
+      <div class="perfil-meta">
+        <h1 id="perfilNome">Perfil</h1>
+        <span id="perfilEmail" style="font-size:.7rem;opacity:.7;">Carregando...</span>
+      </div>
+    </div>
+    <div class="perfil-section">
+      <h2>Dados básicos</h2>
+      <div class="perfil-row">
+        <label for="nomePerfil">Nome</label>
+        <input id="nomePerfil" type="text" disabled />
+      </div>
+      <div class="perfil-row">
+        <label for="emailPerfil">E-mail</label>
+        <input id="emailPerfil" type="email" disabled />
+      </div>
+    </div>
+    <div class="perfil-actions">
+      <button type="button" id="btnFechar" class="btn btn-primary" onclick="window.location.href='/app'">Fechar</button>
+    </div>
+  </div>
+  <script type="module">
+    async function carregar(){
+      try{
+        const r = await fetch('/api/auth/me',{credentials:'include'});
+        if(!r.ok){ window.location.href='/'; return; }
+        const { user } = await r.json();
+        if(!user){ window.location.href='/'; return; }
+        const nome = user.nome || 'Usuário';
+        const email = user.email || '';
+        document.getElementById('perfilNome').textContent = nome;
+        document.getElementById('perfilEmail').textContent = email;
+        document.getElementById('nomePerfil').value = nome;
+        document.getElementById('emailPerfil').value = email;
+        document.getElementById('perfilAvatar').textContent = nome.charAt(0).toUpperCase();
+      }catch{ window.location.href='/'; }
+    }
+    carregar();
+  </script>
+</body>
+</html>
