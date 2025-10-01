@@ -1,15 +1,15 @@
 <div class="clientes-header-wrapper" data-collapsed="false">
   <div class="clientes-header-toggle-bar">
-    <button id="toggleClientesHeader" class="clientes-header-toggle" aria-expanded="true" aria-controls="clientes-header-partial" title="Mostrar / Ocultar filtros">
+  <button id="toggleClientesHeader" class="clientes-header-toggle" aria-expanded="true" aria-controls="clientes-header-partial" title="Mostrar / Ocultar filtros" aria-pressed="false">
       <i class="fa-solid fa-magnifying-glass"></i>
       <span class="label">Filtros & Busca</span>
       <i class="chevron fa-solid fa-chevron-up" aria-hidden="true"></i>
     </button>
-    <span id="totalClients" class="total-info total-inline"></span>
+  <span id="totalClients" class="total-info total-inline" role="status" aria-live="polite"></span>
   </div>
   <div class="crm-header" id="clientes-header-partial" role="region" aria-label="Filtros principais">
   <input type="text" id="searchInput" placeholder="Buscar por nome ou e-mail...">
-  <button id="toggleAdvancedFilters" class="filter-button" aria-expanded="false" aria-controls="advancedFiltersPanel" title="Filtros avançados">
+  <button id="toggleAdvancedFilters" class="filter-button" aria-expanded="false" aria-controls="advancedFiltersPanel" title="Filtros avançados" aria-pressed="false">
     <i class="fa-solid fa-filter"></i>
     <span id="activeFiltersBadge" class="filter-badge" style="display:none">0</span>
   </button>

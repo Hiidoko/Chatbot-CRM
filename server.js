@@ -1,9 +1,12 @@
 const express = require("express");
 const path = require("path");
+const { requestLogger } = require('./middleware/requestLogger');
+const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const pkg = require('./package.json');
 
+app.use(requestLogger);
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(express.json({ limit: "1mb" }));
@@ -36,11 +39,11 @@ app.get('/sobre', (req, res) => {
 });
 
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ message: "Rota não encontrada" });
-  }
+  if (req.path.startsWith('/api/')) return res.status(404).json({ message: "Rota não encontrada" });
   res.status(404).send('Página não encontrada');
 });
+
+app.use(errorHandler);
 
 module.exports = app;
 

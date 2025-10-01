@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ClienteValidator (schema unificado) detecta email inválido 1`] = `
+{
+  "errors": [
+    {
+      "field": "email",
+      "message": "E-mail inválido.",
+    },
+  ],
+}
+`;

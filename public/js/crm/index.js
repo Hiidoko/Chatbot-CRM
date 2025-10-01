@@ -4,6 +4,8 @@ import { renderConsultores, adicionarConsultor, MAQUINAS, initConsultoresSearch,
 import { validarCliente, exibirErrosModal, limparErros } from './validation.js';
 import { validarCliente as validarClienteUnit } from './validation.js';
 import { swapView } from '../viewLoader.js';
+import { debounce, mountToastManager, populateSelect, createToggleSection } from '../shared/domUtils.js';
+import { loadI18n, applyI18nDom, t, getCurrentLang } from '../shared/i18n.js';
 
 const crm = new CRM();
 
@@ -32,7 +34,8 @@ const cancelEditBtn = document.getElementById('cancelEdit');
 let listaConsultorEl = null;
 let listaStatusFiltradoEl = null;
 let listaMaquinaEl = null;
-const toastContainer = document.getElementById('crm-toast-container');
+// Inicializa gerenciador de toasts (se container não existir será criado)
+const toast = mountToastManager({});
 const chatbotWidget = document.getElementById('chatbot-widget');
 const headerTop = document.querySelector('.crm-header-top');
 const headerTitle = headerTop ? headerTop.querySelector('h1') : null;
@@ -193,14 +196,7 @@ function confirmar(mensagem) {
   });
 }
 
-function toast(msg, tipo='info', tempo=3500) {
-  if (!toastContainer) return;
-  const t = document.createElement('div');
-  t.className = `toast ${tipo==='erro'?'error':tipo==='sucesso'?'success':''}`;
-  t.textContent = msg;
-  toastContainer.appendChild(t);
-  setTimeout(()=> { t.classList.add('hide'); setTimeout(()=> t.remove(), 380); }, tempo);
-}
+// toast() agora fornecido via mountToastManager
 
 const fields = {
   nome: document.getElementById('editNome'),
@@ -378,13 +374,10 @@ function atualizarLista() {
   atualizarClearFiltersVisibility();
 }
 
-let debounceTimer;
 function bindSearch() {
   if (!searchInput) return;
-  searchInput.addEventListener('input', () => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => atualizarLista(), 120);
-  });
+  const run = debounce(() => atualizarLista(), 120);
+  searchInput.addEventListener('input', run);
 }
 
 function contarFiltrosAtivos() {
@@ -464,11 +457,13 @@ function abrirPainelFiltros() {
   if (!advancedFiltersPanel || !toggleAdvancedFiltersBtn) return;
   advancedFiltersPanel.style.display = 'flex';
   toggleAdvancedFiltersBtn.setAttribute('aria-expanded','true');
+  toggleAdvancedFiltersBtn.setAttribute('aria-pressed','true');
 }
 function fecharPainelFiltros() {
   if (!advancedFiltersPanel || !toggleAdvancedFiltersBtn) return;
   advancedFiltersPanel.style.display = 'none';
   toggleAdvancedFiltersBtn.setAttribute('aria-expanded','false');
+  toggleAdvancedFiltersBtn.setAttribute('aria-pressed','false');
 }
 function bindToggleFilters() {
   toggleAdvancedFiltersBtn && toggleAdvancedFiltersBtn.addEventListener('click', () => {
@@ -483,26 +478,15 @@ function bindToggleFilters() {
 function escFiltersHandler(e){ if (e.key==='Escape' && advancedFiltersPanel && advancedFiltersPanel.style.display==='flex') fecharPainelFiltros(); }
 function outsideFiltersHandler(e){ if (advancedFiltersPanel && !advancedFiltersPanel.contains(e.target) && e.target !== toggleAdvancedFiltersBtn && !toggleAdvancedFiltersBtn.contains(e.target)) { if (advancedFiltersPanel.style.display==='flex') fecharPainelFiltros(); } }
 
-function preencherSelect(selectEl, valores) {
-  const atual = selectEl.value;
-  const base = Array.from(new Set(valores.filter(v => v))).sort((a,b) => a.localeCompare(b, 'pt-BR'));
-  selectEl.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
-  base.forEach(v => {
-    const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = v;
-    selectEl.appendChild(opt);
-  });
-  if (base.includes(atual)) selectEl.value = atual; else selectEl.value = '';
-}
+// preencherSelect substituído por populateSelect helper
 
 function atualizarFiltrosDinamicos() {
   if (!filtroCidade) return; 
   const todos = crm.listar();
-  preencherSelect(filtroCidade, todos.map(c => c.cidade));
-  preencherSelect(filtroMaquina, todos.map(c => c.maquina));
-  preencherSelect(filtroConsultor, todos.map(c => c.consultor));
-  preencherSelect(filtroStatus, todos.map(c => c.status));
+  populateSelect(filtroCidade, todos.map(c => c.cidade));
+  populateSelect(filtroMaquina, todos.map(c => c.maquina));
+  populateSelect(filtroConsultor, todos.map(c => c.consultor));
+  populateSelect(filtroStatus, todos.map(c => c.status));
 }
 
 function atualizarAnaliticosFiltrados(lista) {
@@ -948,9 +932,11 @@ window.addEventListener('click', e => {
 window.addEventListener('message', event => {
   if (event.data && event.data.tipo === 'novoCliente' && event.data.cliente) {
     const bruto = { ...event.data.cliente };
+  if (!bruto.status) bruto.status = 'novo';
+  bruto.origem = 'chatbot';
     const { valid, value } = validarCliente(bruto);
     if (!valid) {
-      toast('Cliente recebido do chatbot com dados inválidos','erro');
+      toast(t('toast.leadInvalido') || 'Cliente recebido do chatbot com dados inválidos','erro');
       return;
     }
     const cliente = { ...value };
@@ -961,7 +947,7 @@ window.addEventListener('message', event => {
     notificarClientesAtualizados();
     atualizarFiltrosDinamicos();
     atualizarLista();
-    toast('Novo cliente recebido do chatbot','info');
+  toast(t('toast.leadRecebido') || 'Novo cliente recebido do chatbot','info');
     requestAnimationFrame(() => {
       const card = document.querySelector(`.cliente-card button.edit[data-id="${novoId}"]`)?.closest('.cliente-card');
       if (card) {
@@ -989,95 +975,55 @@ async function carregarVersaoProjeto() {
   } catch(e) { /* silencioso */ }
 }
 
-const I18N = {
-  pt: {
-    'sobre.titulo': 'Sobre o Projeto',
-  'sobre.intro': 'Este aplicativo CRM + Chatbot foi criado como <strong>material de estudo e portfólio</strong>, reunindo práticas atuais de <strong>Full Stack JavaScript</strong> (Node.js no backend e ES Modules no frontend) em um cenário realista. Os dados são fictícios e <strong>não devem ser usados em produção</strong> sem auditoria de segurança, revisão de infraestrutura, cobertura de testes automatizados e pipeline de deploy apropriado.',
-  'sobre.resumo': 'Resumo da Aplicação',
-  'sobre.resumoTexto': 'Um protótipo de CRM integrado a um chatbot para captar e nutrir leads: contempla cadastro/edição de clientes (modal e inline), atribuição automática de consultores por especialidade, filtros avançados com busca unificada, ordenação e paginação flexíveis, além de painéis analíticos que refletem métricas em tempo real. A interface entrega feedback moderno (toasts, confirmações customizadas, animações acessíveis) enquanto a arquitetura reforça organização modular entre Express, validações compartilhadas e manipulação direta de DOM sem recorrer a frameworks pesados.',
-  'sobre.tecnologias': 'Tecnologias & Métodos',
-  'sobre.tecnologiasTexto': 'Base tecnológica integra serviços enxutos em <strong>Node.js + Express</strong> com uma SPA modular sem frameworks pesados. Organização em camadas, validações compartilhadas e pipelines consistentes deixam o caminho aberto para evoluções rápidas e seguras.',
-  'sobre.tecnologiasBackend': 'Backend orientado a serviços',
-  'sobre.tecnologiasBackendDesc': 'API Express enxuta com camadas de modelo e validação compartilhadas com o frontend, pronta para crescer em integrações REST ou GraphQL.',
-  'sobre.tecnologiasFrontend': 'Frontend modular em ES Modules',
-  'sobre.tecnologiasFrontendDesc': 'SPA leve com ES Modules, eventos customizados e widgets plugáveis sem bibliotecas pesadas, preservando controle total do DOM.',
-  'sobre.tecnologiasQualidade': 'Qualidade e experiência',
-  'sobre.tecnologiasQualidadeDesc': 'Validações reutilizadas, estados acessíveis e microinterações com feedback imediato (toasts, confirmações, animações) para uma UX consistente em qualquer dispositivo.',
-  'sobre.techPillNode': '<i class="fa-brands fa-node-js" aria-hidden="true"></i> Node.js 18+',
-  'sobre.techPillExpress': '<i class="fa-solid fa-network-wired" aria-hidden="true"></i> Express 5',
-  'sobre.techPillModules': '<i class="fa-solid fa-puzzle-piece" aria-hidden="true"></i> ES Modules',
-  'sobre.techPillA11y': '<i class="fa-solid fa-universal-access" aria-hidden="true"></i> Acessibilidade',
-  'sobre.techPillUX': '<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> UX Responsiva',
-    'sobre.conheca': 'Conheça-nos',
-    'sobre.conhecaTexto': 'Links para contato e acompanhamento de outros projetos:',
-    'sobre.disclaimer': 'Este repositório existe para fins educacionais e demonstração de competências. Qualquer semelhança com dados reais é coincidência.',
-    'sobre.atualizado': 'Atualizado em'
-  },
-  en: {
-    'sobre.titulo': 'About the Project',
-  'sobre.intro': 'This CRM + Chatbot application was built as <strong>study and portfolio material</strong>, combining current <strong>Full Stack JavaScript</strong> practices (Node.js backend and ES Modules frontend) in a realistic scenario. All data is fictitious and it <strong>must not reach production</strong> without security audits, infrastructure review, automated test coverage, and a proper deployment pipeline.',
-  'sobre.resumo': 'Application Summary',
-  'sobre.resumoTexto': 'A CRM prototype integrated with a chatbot to capture and nurture leads: it covers client creation/editing (modal and inline), automatic consultant assignment by specialty, unified advanced filters with flexible sorting and pagination, plus live analytics panels mirroring key metrics. The interface provides modern feedback (toasts, custom confirmations, accessibility-aware animations) while the architecture showcases modular organization across Express, shared validation layers, and hands-on DOM work without heavyweight frontend frameworks.',
-  'sobre.tecnologias': 'Technologies & Methods',
-  'sobre.tecnologiasTexto': 'The foundation blends lean <strong>Node.js + Express</strong> services with a modular SPA that avoids heavyweight frameworks. Layered organization, shared validations, and consistent pipelines keep the project ready for fast, safe iterations.',
-  'sobre.tecnologiasBackend': 'Service-oriented backend',
-  'sobre.tecnologiasBackendDesc': 'Slim Express API with shared model/validation layers, ready to expand into REST or GraphQL integrations.',
-  'sobre.tecnologiasFrontend': 'ES Modules modular frontend',
-  'sobre.tecnologiasFrontendDesc': 'Lightweight SPA powered by ES Modules, custom events, and progressively pluggable widgets—no bulky frameworks required.',
-  'sobre.tecnologiasQualidade': 'Quality & experience',
-  'sobre.tecnologiasQualidadeDesc': 'Reused validations, accessibility-first states, microinteractions, and instant feedback (toasts, confirmations, animations) for a consistent UX everywhere.',
-  'sobre.techPillNode': '<i class="fa-brands fa-node-js" aria-hidden="true"></i> Node.js 18+',
-  'sobre.techPillExpress': '<i class="fa-solid fa-network-wired" aria-hidden="true"></i> Express 5',
-  'sobre.techPillModules': '<i class="fa-solid fa-puzzle-piece" aria-hidden="true"></i> ES Modules',
-  'sobre.techPillA11y': '<i class="fa-solid fa-universal-access" aria-hidden="true"></i> Accessibility',
-  'sobre.techPillUX': '<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Responsive UX',
-    'sobre.conheca': 'Get to Know Us',
-    'sobre.conhecaTexto': 'Links for contact and to follow other projects:',
-    'sobre.disclaimer': 'This repository exists for educational purposes and skill demonstration. Any resemblance to real data is coincidental.',
-    'sobre.atualizado': 'Updated on'
-  }
-};
-
-function aplicarI18n(lang) {
-  const dict = I18N[lang] || I18N.pt;
-  const targets = document.querySelectorAll('[data-i18n]');
-  targets.forEach(node => {
-    const key = node.getAttribute('data-i18n');
-    if (!dict[key]) return;
-    node.classList.remove('i18n-fade-enter');
-    void node.offsetWidth; 
-    node.innerHTML = dict[key];
-    node.classList.add('i18n-fade-enter');
-  });
+async function aplicarI18n(lang) {
+  await loadI18n(lang);
+  applyI18nDom(document);
   const btnPt = document.getElementById('langPt');
   const btnEn = document.getElementById('langEn');
   if (btnPt && btnEn) {
-    btnPt.setAttribute('aria-pressed', lang === 'pt');
-    btnEn.setAttribute('aria-pressed', lang === 'en');
+    btnPt.setAttribute('aria-pressed', getCurrentLang() === 'pt');
+    btnEn.setAttribute('aria-pressed', getCurrentLang() === 'en');
   }
-  localStorage.setItem('crm-lang', lang);
 }
-
 function inicializarI18n() {
-  const langSalva = localStorage.getItem('crm-lang') || 'pt';
+  const langSalva = localStorage.getItem('crm-lang');
   aplicarI18n(langSalva);
   document.getElementById('langPt')?.addEventListener('click', () => aplicarI18n('pt'));
   document.getElementById('langEn')?.addEventListener('click', () => aplicarI18n('en'));
 }
 
 
+let lastFocusedBeforeModal = null;
 function mostrarModal() {
+  lastFocusedBeforeModal = document.activeElement;
+  editModal.setAttribute('role','dialog');
+  editModal.setAttribute('aria-modal','true');
+  editModal.setAttribute('aria-label','Edição de Cliente');
   editModal.classList.remove('closing');
   editModal.style.display = 'flex';
   requestAnimationFrame(()=> editModal.classList.add('show'));
-  // foco inicial
-  setTimeout(()=> fields.nome.focus(), 40);
+  // foco inicial seguro
+  setTimeout(()=> { if (fields.nome) fields.nome.focus(); }, 40);
 }
 function fecharModal() {
   editModal.classList.add('closing');
   editModal.classList.remove('show');
   setTimeout(()=> { if(editModal.classList.contains('closing')) { editModal.style.display='none'; editModal.classList.remove('closing'); } }, 320);
+  if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
+    lastFocusedBeforeModal.focus();
+  }
 }
+// Trap de foco
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Tab') return;
+  if (editModal.style.display !== 'flex') return;
+  const focusables = editModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  if (focusables.length === 0) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length -1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && editModal.style.display === 'flex') fecharModal(); });
 
 function bindClientesRefs() {
@@ -1119,12 +1065,14 @@ function inicializarCollapseClientesHeader() {
   if (saved === 'true') {
     wrapper.dataset.collapsed = 'true';
     toggleBtn.setAttribute('aria-expanded','false');
+    toggleBtn.setAttribute('aria-pressed','false');
   }
   const region = document.getElementById('clientes-header-partial');
   function toggle(force) {
     const collapsed = force !== undefined ? force : wrapper.dataset.collapsed === 'false';
     wrapper.dataset.collapsed = collapsed ? 'true' : 'false';
     toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  toggleBtn.setAttribute('aria-pressed', collapsed ? 'false' : 'true');
     localStorage.setItem('crm-clientes-header-collapsed', collapsed ? 'true' : 'false');
     if (analyticsPanelsEl) analyticsPanelsEl.setAttribute('aria-hidden', collapsed ? 'true':'false');
   }

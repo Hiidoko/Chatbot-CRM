@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renderClientes (estrutura semântica) gera <ul><li> com atributos ARIA esperados 1`] = `
+"<ul class="cliente-list-ul" role="list"><li class="cliente-card collapsed" tabindex="0" role="button" aria-expanded="false" aria-pressed="false" data-status="novo">
+      <div class="cliente-info">
+        <strong class="field field-nome" data-field="nome">Cliente Teste</strong>
+        <span class="field field-status" data-field="status"><i class="fa-solid fa-flag"></i> <strong class="status-badge status-novo">novo</strong></span>
+        <span class="field pill" data-field="email"><i class="fa-solid fa-envelope"></i> cliente@teste.com</span>
+        <span class="field pill" data-field="telefone"><i class="fa-solid fa-phone"></i> (11) 99999-9999</span>
+        <span class="field pill" data-field="cidade"><i class="fa-solid fa-location-dot"></i> São Paulo</span>
+        <span class="field pill" data-field="maquina"><i class="fa-solid fa-gears"></i> Máquina A</span>
+        <span class="field pill" data-field="horario"><i class="fa-solid fa-clock"></i> Manhã</span>
+        <span class="field pill" data-field="consultor"><i class="fa-solid fa-user-tie"></i> Consultor X</span>
+        <span class="field meta" data-field="dataCadastro"><i class="fa-solid fa-calendar"></i> 31/12/2023</span>
+      </div>
+      <div class="cliente-actions">
+        <button class="edit" data-id="1"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+        <button class="delete" data-id="1"><i class="fa-solid fa-trash"></i> Excluir</button>
+      </div><span class="cliente-toggle-indicator">+</span></li><li class="cliente-card collapsed" tabindex="0" role="button" aria-expanded="false" aria-pressed="false" data-status="novo">
+      <div class="cliente-info">
+        <strong class="field field-nome" data-field="nome">Outro Cliente</strong>
+        <span class="field field-status" data-field="status"><i class="fa-solid fa-flag"></i> <strong class="status-badge status-novo">novo</strong></span>
+        <span class="field pill" data-field="email"><i class="fa-solid fa-envelope"></i> cliente@teste.com</span>
+        <span class="field pill" data-field="telefone"><i class="fa-solid fa-phone"></i> (11) 99999-9999</span>
+        <span class="field pill" data-field="cidade"><i class="fa-solid fa-location-dot"></i> São Paulo</span>
+        <span class="field pill" data-field="maquina"><i class="fa-solid fa-gears"></i> Máquina A</span>
+        <span class="field pill" data-field="horario"><i class="fa-solid fa-clock"></i> Manhã</span>
+        <span class="field pill" data-field="consultor"><i class="fa-solid fa-user-tie"></i> Consultor X</span>
+        <span class="field meta" data-field="dataCadastro"><i class="fa-solid fa-calendar"></i> 31/12/2023</span>
+      </div>
+      <div class="cliente-actions">
+        <button class="edit" data-id="2"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+        <button class="delete" data-id="2"><i class="fa-solid fa-trash"></i> Excluir</button>
+      </div><span class="cliente-toggle-indicator">+</span></li></ul>"
+`;

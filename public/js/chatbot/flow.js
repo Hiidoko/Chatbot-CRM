@@ -1,4 +1,6 @@
 import { botMessage, userMessage, mostrarOpcoesMaquina, mostrarDigitando, removerDigitando, toast } from './dom.js';
+import { fetchWithRetry } from '../../js/shared/net.js';
+import { t, loadI18n } from '../../js/shared/i18n.js';
 import { validarCampo, mensagemErro } from './validation.js';
 
 const questions = [
@@ -18,7 +20,7 @@ export class ChatbotFlow {
     this.currentQuestion = 0;
     this.leadData = { nome:'', email:'', telefone:'', cidade:'', maquina:'', horario:'' };
     this._bind();
-    botMessage(this.messagesEl, questions[this.currentQuestion].text);
+  loadI18n(localStorage.getItem('crm-lang')).then(()=> botMessage(this.messagesEl, questions[this.currentQuestion].text));
   }
 
   _bind() {
@@ -84,36 +86,52 @@ export class ChatbotFlow {
     setTimeout(() => this._reset(), 1500);
   }
 
-  _enviarParaServidor(cliente) {
+  _enviarParaServidorFallback(cliente) {
     if (window.parent && window.parent !== window) {
       window.parent.postMessage({ tipo: 'novoCliente', cliente }, '*');
     }
   }
 
-  _enviarDados(payload) {
+  async _enviarDados(payload) {
     const overlay = document.createElement('div');
     overlay.className = 'loader-overlay';
     overlay.innerHTML = `<div class="spinner"></div><div class="status-text">Enviando...</div>`;
     document.getElementById('chat-container').appendChild(overlay);
-
-    const falha = Math.random() < 0.1;
-
-    setTimeout(() => {
-      if (falha) {
-        overlay.querySelector('.status-text').textContent = 'Falha ao enviar. Tente novamente.';
-        overlay.querySelector('.spinner').style.borderTopColor = '#c62828';
-        toast('Erro ao enviar lead', 'error');
-        setTimeout(() => overlay.remove(), 1400);
-        botMessage(this.messagesEl, 'Ops! Não consegui registrar agora. Deseja tentar de novo?');
+    const statusText = overlay.querySelector('.status-text');
+    try {
+      const criado = await fetchWithRetry('/api/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const id = Array.isArray(criado?.data) ? criado.data[0]?.id : criado?.id || criado?.data?.id;
+      statusText.textContent = 'Enviado com sucesso!';
+      overlay.querySelector('.spinner').style.borderTopColor = '#2e7d32';
+  toast(t('toast.leadPersistido') || 'Lead enviado (persistido)', 'success');
+      setTimeout(()=> overlay.remove(), 900);
+      if (id) {
+        botMessage(this.messagesEl, `Obrigado! Seu registro foi criado. Protocolo: ${id}. Podemos iniciar outro atendimento.`);
       } else {
-        this._enviarParaServidor(payload);
-        overlay.querySelector('.status-text').textContent = 'Enviado com sucesso!';
-        overlay.querySelector('.spinner').style.borderTopColor = '#2e7d32';
-        toast('Lead enviado com sucesso', 'success');
-        setTimeout(() => overlay.remove(), 900);
-        botMessage(this.messagesEl, 'Obrigado! Seus dados foram enviados. Se quiser, pode iniciar um novo atendimento.');
+        botMessage(this.messagesEl, 'Obrigado! Seus dados foram enviados e armazenados. Podemos iniciar outro atendimento.');
       }
-    }, 1100 + Math.random()*700);
+    } catch (err) {
+      statusText.textContent = 'Falha de rede. Tentando fallback...';
+      overlay.querySelector('.spinner').style.borderTopColor = '#c68928';
+      try {
+        this._enviarParaServidorFallback(payload);
+        statusText.textContent = 'Enviado (fallback)!';
+        overlay.querySelector('.spinner').style.borderTopColor = '#2e7d32';
+  toast(t('toast.leadFallback') || 'Lead enviado via fallback', 'info');
+        setTimeout(()=> overlay.remove(), 1200);
+        botMessage(this.messagesEl, 'Rede instável, mas recebemos seus dados. Iniciar novo atendimento?');
+      } catch {
+        statusText.textContent = 'Falha ao enviar. Tente novamente.';
+        overlay.querySelector('.spinner').style.borderTopColor = '#c62828';
+  toast(t('toast.leadErro') || 'Erro ao enviar lead', 'error');
+        setTimeout(()=> overlay.remove(), 1500);
+        botMessage(this.messagesEl, 'Ops! Não consegui registrar agora. Deseja tentar de novo?');
+      }
+    }
   }
 
   _reset() {

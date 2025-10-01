@@ -1,13 +1,19 @@
 export function renderClientes(container, clientes, callbacks) {
+  // Criamos uma UL semântica para lista de clientes
+  const ul = document.createElement('ul');
+  ul.className = 'cliente-list-ul';
+  ul.setAttribute('role','list');
   container.innerHTML = '';
+
   clientes.forEach(cliente => {
-  const card = document.createElement('div');
-  card.className = 'cliente-card collapsed';
-  card.setAttribute('tabindex','0');
-  card.setAttribute('role','button');
-  card.setAttribute('aria-expanded','false');
-    card.dataset.status = (cliente.status || 'novo').toLowerCase();
-    card.innerHTML = `
+    const li = document.createElement('li');
+    li.className = 'cliente-card collapsed';
+    li.setAttribute('tabindex','0');
+    li.setAttribute('role','button');
+    li.setAttribute('aria-expanded','false');
+    li.setAttribute('aria-pressed','false');
+    li.dataset.status = (cliente.status || 'novo').toLowerCase();
+    li.innerHTML = `
       <div class="cliente-info">
         <strong class="field field-nome" data-field="nome">${cliente.nome}</strong>
         <span class="field field-status" data-field="status"><i class="fa-solid fa-flag"></i> <strong class="status-badge status-${(cliente.status||'novo').replace(/\s+/g,'-')}">${cliente.status || 'novo'}</strong></span>
@@ -23,34 +29,29 @@ export function renderClientes(container, clientes, callbacks) {
         <button class="edit" data-id="${cliente.id}"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
         <button class="delete" data-id="${cliente.id}"><i class="fa-solid fa-trash"></i> Excluir</button>
       </div>`;
-    // Indicador de toggle
     const indicator = document.createElement('span');
     indicator.className = 'cliente-toggle-indicator';
     indicator.textContent = '+';
-    card.appendChild(indicator);
-
+    li.appendChild(indicator);
     function toggle() {
-      const expanded = card.classList.toggle('expanded');
-      card.classList.toggle('collapsed', !expanded);
-      card.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      const expanded = li.classList.toggle('expanded');
+      li.classList.toggle('collapsed', !expanded);
+      li.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      li.setAttribute('aria-pressed', expanded ? 'true' : 'false');
       indicator.textContent = expanded ? '−' : '+';
     }
-    card.addEventListener('click', e => {
+    li.addEventListener('click', e => {
       if (e.target.closest('.cliente-actions')) return;
       if (e.target.closest('button')) return;
       toggle();
     });
-    card.addEventListener('keypress', e => { if (e.key==='Enter' || e.key===' ') { e.preventDefault(); toggle(); } });
-
-    container.appendChild(card);
+    li.addEventListener('keypress', e => { if (e.key==='Enter' || e.key===' ') { e.preventDefault(); toggle(); } });
+    ul.appendChild(li);
   });
-
-  container.querySelectorAll('.edit').forEach(btn => {
-    btn.onclick = () => callbacks.onEdit(Number(btn.dataset.id));
-  });
-  container.querySelectorAll('.delete').forEach(btn => {
-    btn.onclick = () => callbacks.onDelete(Number(btn.dataset.id));
-  });
+  container.appendChild(ul);
+  // binding dos botões
+  container.querySelectorAll('.edit').forEach(btn => { btn.onclick = () => callbacks.onEdit(Number(btn.dataset.id)); });
+  container.querySelectorAll('.delete').forEach(btn => { btn.onclick = () => callbacks.onDelete(Number(btn.dataset.id)); });
 }
 
 export function preencherModal(cliente, fields) {
