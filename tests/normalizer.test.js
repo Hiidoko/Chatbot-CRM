@@ -4,7 +4,8 @@ const {
   normalizeEmail,
   normalizeTelefone,
   normalizeMaquina,
-  normalizeHorario
+  normalizeHorario,
+  normalizeNotas
 } = require('../utils/normalizer');
 
 describe('Normalizers', () => {
@@ -29,5 +30,12 @@ describe('Normalizers', () => {
   test('normalizeHorario corta tamanho', () => {
     const long = 'a'.repeat(120);
     expect(normalizeHorario(long).length).toBeLessThanOrEqual(60);
+  });
+  test('normalizeNotas mantém quebras de linha e limita tamanho', () => {
+    const long = ('Linha 1\nLinha 2\n').repeat(100);
+    const result = normalizeNotas(long);
+  expect(result.startsWith('Linha 1')).toBe(true);
+    expect(result.includes('\n')).toBe(true);
+    expect(result.length).toBeLessThanOrEqual(1000);
   });
 });

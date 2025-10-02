@@ -84,7 +84,7 @@ async function buscar(params = {}) {
 
   if (texto) {
     const q = norm(texto);
-    const campos = ['nome','email','telefone','cidade','maquina','consultor'];
+  const campos = ['nome','email','telefone','cidade','maquina','consultor','notas'];
     lista = lista.filter(item => campos.some(c => item[c] && norm(item[c]).includes(q)));
   }
   if (status) { const cmp = norm(status); lista = lista.filter(i => i.status && norm(i.status) === cmp); }

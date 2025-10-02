@@ -5,14 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Bem-vindo • CRM Chatbot</title>
   <meta name="color-scheme" content="dark light" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { theme:{ extend:{ colors:{ brand:{50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a'} } } } };
-  </script>
-  <style>
-    .fade-in{animation:fade .65s ease forwards;} @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-    .pulse-ring::before{content:'';position:absolute;inset:-18px;border:3px solid rgba(255,255,255,.08);border-radius:50%;animation:ring 2.8s linear infinite;}@keyframes ring{0%{transform:scale(.9);opacity:1;}70%{transform:scale(1.4);opacity:0;}100%{transform:scale(1.4);opacity:0;}}
-  </style>
+  <link rel="stylesheet" href="/styles/app.css" />
 </head>
 <body class="h-full min-h-screen bg-[#0f172a] flex items-center justify-center p-6 text-slate-100 relative overflow-hidden">
   <div class="pointer-events-none absolute inset-0 opacity-[0.35] mix-blend-screen">

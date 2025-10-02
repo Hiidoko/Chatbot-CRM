@@ -36,7 +36,10 @@ const saveEditBtn = document.getElementById('saveEdit');
 const cancelEditBtn = document.getElementById('cancelEdit');
 let listaConsultorEl = null;
 let listaStatusFiltradoEl = null;
-let listaMaquinaEl = null;
+let maquinasChartCanvas = null;
+let maquinasChartLegendEl = null;
+let maquinasChartInstance = null;
+let chartJsLoaderPromise = null;
 // Inicializa gerenciador de toasts (se container não existir será criado)
 const toast = mountToastManager({});
 const chatbotWidget = document.getElementById('chatbot-widget');
@@ -443,7 +446,8 @@ const fields = {
   cidade: document.getElementById('editCidade'),
   maquina: document.getElementById('editMaquina'), 
   horario: document.getElementById('editHorario'),
-  consultor: document.getElementById('editConsultor')
+  consultor: document.getElementById('editConsultor'),
+  notas: document.getElementById('editNotas')
 };
 fields.status = document.getElementById('editStatus');
 let campoEspecialidadeWrapper = null; 
@@ -847,6 +851,133 @@ function outsideFiltersHandler(e){ if (advancedFiltersPanel && !advancedFiltersP
 
 // preencherSelect substituído por populateSelect helper
 
+const MAQUINAS_CHART_PALETTE = ['#6366F1','#8B5CF6','#A855F7','#EC4899','#F472B6','#38BDF8','#22D3EE','#34D399','#FCD34D','#F97316'];
+
+function ensureChartJs() {
+  if (window.Chart) return Promise.resolve(window.Chart);
+  if (!chartJsLoaderPromise) {
+    chartJsLoaderPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js';
+      script.async = true;
+      script.onload = () => resolve(window.Chart);
+      script.onerror = () => reject(new Error('Falha ao carregar Chart.js'));
+      document.head.appendChild(script);
+    });
+  }
+  return chartJsLoaderPromise;
+}
+
+function hexToRgba(hex, alpha = 1) {
+  const normalized = hex.replace('#','');
+  const bigint = parseInt(normalized, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function getMaquinaColor(index, alpha = 0.85) {
+  const hex = MAQUINAS_CHART_PALETTE[index % MAQUINAS_CHART_PALETTE.length];
+  return hexToRgba(hex, alpha);
+}
+
+function updateMaquinasLegend(labels, values, total) {
+  if (!maquinasChartLegendEl) return;
+  if (!total) {
+    maquinasChartLegendEl.innerHTML = '<p class="chart-empty">Nenhum cliente filtrado.</p>';
+    return;
+  }
+  const html = labels.map((label, idx) => {
+    const count = values[idx];
+    const percent = total ? Math.round((count / total) * 1000) / 10 : 0;
+    const labelText = label || '—';
+    return `<div class="chart-legend-item">
+      <strong><span class="chart-color-dot" style="background:${getMaquinaColor(idx, 1)}"></span>${labelText}</strong>
+      <span class="chart-legend-value">${count} <span class="chart-legend-percent">(${percent.toLocaleString('pt-BR', { minimumFractionDigits: percent % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}%)</span></span>
+    </div>`;
+  }).join('');
+  maquinasChartLegendEl.innerHTML = html;
+}
+
+function renderMaquinasChart(porMaquina) {
+  if (!maquinasChartCanvas || !maquinasChartLegendEl) return;
+  const labels = Object.keys(porMaquina).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const values = labels.map(label => porMaquina[label]);
+  const total = values.reduce((acc, n) => acc + n, 0);
+
+  const ctx = maquinasChartCanvas.getContext('2d');
+  if (maquinasChartInstance) {
+    maquinasChartInstance.destroy();
+    maquinasChartInstance = null;
+  }
+
+  if (!total) {
+    updateMaquinasLegend([], [], 0);
+    if (ctx) ctx.clearRect(0, 0, maquinasChartCanvas.width || 300, maquinasChartCanvas.height || 300);
+    return;
+  }
+
+  updateMaquinasLegend(labels, values, total);
+
+  const createChart = () => {
+    if (!ctx) return;
+    const Chart = window.Chart;
+    if (!Chart) return;
+    maquinasChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: labels.map((_, idx) => getMaquinaColor(idx, 0.82)),
+          hoverBackgroundColor: labels.map((_, idx) => getMaquinaColor(idx, 0.95)),
+          borderWidth: 0,
+          hoverOffset: 10,
+          spacing: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '50%',
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(15,23,42,0.92)',
+            borderColor: 'rgba(255,255,255,0.08)',
+            borderWidth: 1,
+            padding: 12,
+            titleColor: '#F8FAFC',
+            bodyColor: '#E2E8F0',
+            displayColors: false,
+            callbacks: {
+              label(context) {
+                const value = context.parsed;
+                const pct = Math.round((value / total) * 1000) / 10;
+                const pctLabel = pct.toLocaleString('pt-BR', { minimumFractionDigits: pct % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 });
+                return `${value} cliente${value!==1?'s':''} (${pctLabel}%)`;
+              }
+            }
+          }
+        },
+        animation: {
+          animateScale: true,
+          animateRotate: true
+        }
+      }
+    });
+  };
+
+  if (window.Chart) {
+    createChart();
+  } else {
+    ensureChartJs().then(createChart).catch(err => console.error('[CRM] Falha ao inicializar gráfico de máquinas', err));
+  }
+}
+
 function atualizarFiltrosDinamicos() {
   if (!filtroCidade) return; 
   const todos = crm.listar();
@@ -857,7 +988,7 @@ function atualizarFiltrosDinamicos() {
 }
 
 function atualizarAnaliticosFiltrados(lista) {
-  if (!listaConsultorEl || !listaStatusFiltradoEl || !listaMaquinaEl) return;
+  if (!listaConsultorEl || !listaStatusFiltradoEl) return;
   const porConsultor = lista.reduce((acc, c) => {
     const k = c.consultor || '—';
     acc[k] = (acc[k] || 0) + 1; return acc;
@@ -877,12 +1008,7 @@ function atualizarAnaliticosFiltrados(lista) {
     listaStatusFiltradoEl.appendChild(li);
   });
   const porMaquina = lista.reduce((acc,c)=>{ const m=c.maquina||'—'; acc[m]=(acc[m]||0)+1; return acc; },{});
-  listaMaquinaEl.innerHTML='';
-  Object.keys(porMaquina).sort((a,b)=>a.localeCompare(b,'pt-BR')).forEach(m => {
-    const li=document.createElement('li');
-    li.textContent = `${m}: ${porMaquina[m]}`;
-    listaMaquinaEl.appendChild(li);
-  });
+  renderMaquinasChart(porMaquina);
 }
 
 function abrirModalEdicao(id) {
@@ -892,6 +1018,7 @@ function abrirModalEdicao(id) {
   const cliente = crm.obter(id);
   preencherModal(cliente, fields);
   restaurarCamposCliente();
+  mostrarCampoComLabel(fields.notas);
   atualizarSelectConsultores(cliente?.maquina || '', cliente?.consultor || '');
   mostrarModal();
 }
@@ -1062,6 +1189,8 @@ addClientBtn.onclick = () => {
   fields.consultor?.classList.remove('input-error');
   limparErros(fields);
   restaurarCamposCliente();
+  ocultarCampoComLabel(fields.notas);
+  if (fields.notas) fields.notas.value = '';
   mostrarModal();
 };
 
@@ -1080,6 +1209,7 @@ function abrirModalNovoConsultor() {
   ocultarCampoComLabel(fields.horario);
   ocultarCampoComLabel(fields.status);
   ocultarCampoComLabel(fields.consultor);
+  ocultarCampoComLabel(fields.notas);
   resetConsultorField();
   prepararCampoEspecialidade();
   limparErros(fields);
@@ -1125,6 +1255,9 @@ saveEditBtn.onclick = async () => {
     status: fields.status.value,
     consultor: consultorSelecionado
   };
+  if (!isNew && fields.notas) {
+    dados.notas = fields.notas.value;
+  }
   if (fields.consultor && !fields.consultor.disabled && !consultorSelecionado) {
     exibirErrosModal([{ field: 'consultor', message: 'Selecione um consultor' }], fields);
     return;
@@ -1268,6 +1401,8 @@ async function showSection(section, opts = {}) {
         fields.consultor?.classList.remove('input-error');
         limparErros(fields);
         restaurarCamposCliente();
+        ocultarCampoComLabel(fields.notas);
+        if (fields.notas) fields.notas.value = '';
         mostrarModal();
       };
     } else if (section === 'consultores') {
@@ -1497,6 +1632,9 @@ function bindClientesRefs() {
   clientesContainer = document.getElementById('clientes-list');
   totalClientes = document.getElementById('totalClients');
   searchInput = document.getElementById('searchInput');
+  if (!searchInput) {
+    console.warn('[CRM] Input de busca (searchInput) não encontrado na view de clientes. Verifique se o HTML está correto ou se a view foi carregada.');
+  }
   filtroCidade = document.getElementById('filtroCidade');
   filtroMaquina = document.getElementById('filtroMaquina');
   filtroConsultor = document.getElementById('filtroConsultor');
@@ -1512,7 +1650,15 @@ function bindClientesRefs() {
   paginationBar = document.getElementById('pagination');
   listaConsultorEl = document.getElementById('lista-consultor');
   listaStatusFiltradoEl = document.getElementById('lista-status-filtrado');
-  listaMaquinaEl = document.getElementById('lista-maquina');
+  maquinasChartCanvas = document.getElementById('maquinasChart');
+  maquinasChartLegendEl = document.getElementById('maquinasChartLegend');
+  if (maquinasChartInstance) {
+    maquinasChartInstance.destroy();
+    maquinasChartInstance = null;
+  }
+  if (maquinasChartLegendEl) {
+    maquinasChartLegendEl.innerHTML = '<p class="chart-empty">Carregando dados...</p>';
+  }
   analyticsPanelsEl = document.getElementById('analytics-panels');
   emptyStateEl = document.getElementById('empty-clients');
   emptyMsgEl = document.getElementById('empty-clients-msg');
@@ -1526,21 +1672,23 @@ function inicializarCollapseClientesHeader() {
   const wrapper = document.querySelector('.clientes-header-wrapper');
   const toggleBtn = document.getElementById('toggleClientesHeader');
   if (!wrapper || !toggleBtn) return;
-  const saved = localStorage.getItem('crm-clientes-header-collapsed');
-  if (saved === 'true') {
-    wrapper.dataset.collapsed = 'true';
-    toggleBtn.setAttribute('aria-expanded','false');
-    toggleBtn.setAttribute('aria-pressed','false');
-  }
   const region = document.getElementById('clientes-header-partial');
+  const saved = localStorage.getItem('crm-clientes-header-collapsed');
   function toggle(force) {
-    const collapsed = force !== undefined ? force : wrapper.dataset.collapsed === 'false';
-    wrapper.dataset.collapsed = collapsed ? 'true' : 'false';
-    toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-    toggleBtn.setAttribute('aria-pressed', collapsed ? 'false' : 'true');
-    localStorage.setItem('crm-clientes-header-collapsed', collapsed ? 'true' : 'false');
-    if (analyticsPanelsEl) analyticsPanelsEl.setAttribute('aria-hidden', collapsed ? 'true':'false');
+    const currentlyCollapsed = wrapper.dataset.collapsed === 'true';
+    const targetCollapsed = force !== undefined ? force : !currentlyCollapsed;
+    wrapper.dataset.collapsed = targetCollapsed ? 'true' : 'false';
+    toggleBtn.setAttribute('aria-expanded', targetCollapsed ? 'false' : 'true');
+    toggleBtn.setAttribute('aria-pressed', targetCollapsed ? 'false' : 'true');
+    localStorage.setItem('crm-clientes-header-collapsed', targetCollapsed ? 'true' : 'false');
+    if (region) region.setAttribute('aria-hidden', targetCollapsed ? 'true' : 'false');
+    if (analyticsPanelsEl) {
+      analyticsPanelsEl.dataset.collapsed = targetCollapsed ? 'true' : 'false';
+      analyticsPanelsEl.setAttribute('aria-hidden', targetCollapsed ? 'true' : 'false');
+    }
+    if (targetCollapsed) fecharPainelFiltros?.();
   }
+  toggle(saved === 'true');
   toggleBtn.addEventListener('click', () => toggle());
   toggleBtn.addEventListener('keydown', e => { if (e.key==='Enter' || e.key===' ') { e.preventDefault(); toggle(); }});
   // Atalho: Ctrl+Shift+F recolhe/expande
@@ -1554,22 +1702,32 @@ function inicializarCollapseClientesHeader() {
     const observer = new MutationObserver(()=>{
       const collapsed = wrapper.dataset.collapsed === 'true';
       region.setAttribute('aria-hidden', collapsed ? 'true':'false');
+      if (analyticsPanelsEl) {
+        analyticsPanelsEl.dataset.collapsed = collapsed ? 'true' : 'false';
+        analyticsPanelsEl.setAttribute('aria-hidden', collapsed ? 'true':'false');
+      }
     });
     observer.observe(wrapper, { attributes:true, attributeFilter:['data-collapsed'] });
     region.setAttribute('aria-hidden', wrapper.dataset.collapsed === 'true' ? 'true':'false');
-    if (analyticsPanelsEl) analyticsPanelsEl.setAttribute('aria-hidden', wrapper.dataset.collapsed === 'true' ? 'true':'false');
+    if (analyticsPanelsEl) {
+      analyticsPanelsEl.dataset.collapsed = wrapper.dataset.collapsed === 'true' ? 'true' : 'false';
+      analyticsPanelsEl.setAttribute('aria-hidden', wrapper.dataset.collapsed === 'true' ? 'true':'false');
+    }
   }
 }
 
 window.initClientes = function initClientes() {
   bindClientesRefs();
   atualizarFiltrosDinamicos();
-  bindSearch();
-  bindAdvancedFilters();
-  bindToggleFilters();
-  contarFiltrosAtivos();
-  atualizarLista();
-  inicializarCollapseClientesHeader();
+  // Re-bind dos eventos de busca e filtros sempre que a view é carregada
+  setTimeout(() => {
+    bindSearch();
+    bindAdvancedFilters();
+    bindToggleFilters();
+    contarFiltrosAtivos();
+    atualizarLista();
+    inicializarCollapseClientesHeader();
+  }, 0);
   sincronizarClientesRemotos({ silent: true, force: true }).then(async () => {
     if (!window.__consultoresReatribuicaoFeita) {
       const qtd = await reatribuirConsultoresClientesExistentes();
@@ -1851,6 +2009,7 @@ function restaurarCamposCliente() {
   mostrarCampoComLabel(fields.horario);
   mostrarCampoComLabel(fields.status);
   mostrarCampoComLabel(fields.consultor);
+  mostrarCampoComLabel(fields.notas);
   if (campoEspecialidadeWrapper) campoEspecialidadeWrapper.style.display = 'none';
   popularSelectMaquinas(fields.maquina?.value || '');
   if (fields.maquina && fields.maquina.value) {
@@ -1865,12 +2024,16 @@ function ocultarCampoComLabel(el) {
   const label = encontrarLabelPorControl(el);
   if (label) label.classList.add('hidden-field');
   el.classList.add('hidden-field');
+  const wrapper = el.closest('.modal-field');
+  if (wrapper) wrapper.classList.add('hidden-field');
 }
 function mostrarCampoComLabel(el) {
   if (!el) return;
   const label = encontrarLabelPorControl(el);
   if (label) label.classList.remove('hidden-field');
   el.classList.remove('hidden-field');
+  const wrapper = el.closest('.modal-field');
+  if (wrapper) wrapper.classList.remove('hidden-field');
 }
 
 window.initSobre = function initSobre() {

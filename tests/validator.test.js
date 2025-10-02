@@ -33,4 +33,19 @@ describe('ClienteValidator (schema unificado)', () => {
     const r = validateClienteParcial({ email: 'novo@mail.com' });
     expect(r.valid).toBe(true);
   });
+
+  test('aceita notas opcionais', () => {
+    const c = baseCliente();
+    c.notas = 'Cliente prefere contato por e-mail.';
+    const r = validateCliente(c);
+    expect(r.valid).toBe(true);
+  });
+
+  test('normaliza notas muito longas até o limite', () => {
+    const c = baseCliente();
+    c.notas = 'a'.repeat(1200);
+    const r = validateCliente(c);
+    expect(r.valid).toBe(true);
+    expect(r.value.notas.length).toBe(1000);
+  });
 });

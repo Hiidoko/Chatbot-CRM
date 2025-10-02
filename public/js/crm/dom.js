@@ -1,3 +1,17 @@
+function escapeHtml(str = '') {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatNotas(notas = '') {
+  if (!notas) return '<span class="notas-vazia">Sem notas</span>';
+  return escapeHtml(notas).replace(/\n/g, '<br>');
+}
+
 export function renderClientes(container, clientes, callbacks) {
   // Criamos uma UL semântica para lista de clientes
   const ul = document.createElement('ul');
@@ -13,9 +27,11 @@ export function renderClientes(container, clientes, callbacks) {
     li.setAttribute('aria-expanded','false');
     li.setAttribute('aria-pressed','false');
     li.dataset.status = (cliente.status || 'novo').toLowerCase();
+    const notasHtml = formatNotas(cliente.notas);
     li.innerHTML = `
       <div class="cliente-info">
         <strong class="field field-nome" data-field="nome">${cliente.nome}</strong>
+        <div class="field field-notas" data-field="notas"><i class="fa-solid fa-note-sticky"></i> <span class="field-notas-conteudo">${notasHtml}</span></div>
         <span class="field field-status" data-field="status"><i class="fa-solid fa-flag"></i> <strong class="status-badge status-${(cliente.status||'novo').replace(/\s+/g,'-')}">${cliente.status || 'novo'}</strong></span>
         <span class="field pill" data-field="email"><i class="fa-solid fa-envelope"></i> ${cliente.email}</span>
         <span class="field pill" data-field="telefone"><i class="fa-solid fa-phone"></i> ${cliente.telefone}</span>
@@ -63,6 +79,7 @@ export function preencherModal(cliente, fields) {
   fields.horario.value = cliente.horario;
   if (fields.consultor) fields.consultor.value = cliente.consultor || '';
   if (fields.status) fields.status.value = cliente.status || 'novo';
+  if (fields.notas) fields.notas.value = cliente.notas || '';
 }
 
 function formatarData(iso) {

@@ -1,5 +1,6 @@
 const MAX_MAQUINA = 80;
 const MAX_HORARIO = 60;
+const MAX_NOTAS = 1000;
 
 function trimString(v) {
   return typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '';
@@ -28,6 +29,12 @@ function normalizeHorario(v) {
   return trimString(v).slice(0, MAX_HORARIO);
 }
 
+function normalizeNotas(v) {
+  if (typeof v !== 'string') return '';
+  const normalized = v.replace(/\r\n/g, '\n').trim().slice(0, MAX_NOTAS);
+  return normalized;
+}
+
 function normalizeCliente(obj = {}) {
   return {
     nome: normalizeNomeCidade(obj.nome),
@@ -39,6 +46,7 @@ function normalizeCliente(obj = {}) {
     status: trimString((obj.status || '').toLowerCase()),
     origem: trimString((obj.origem || '').toLowerCase()),
     consultor: trimString(obj.consultor || ''),
+    notas: normalizeNotas(obj.notas),
     dataCadastro: obj.dataCadastro
   };
 }
@@ -50,5 +58,6 @@ module.exports = {
   normalizeTelefone,
   normalizeMaquina,
   normalizeHorario,
+  normalizeNotas,
   normalizeCliente
 };

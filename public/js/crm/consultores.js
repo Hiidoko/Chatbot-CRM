@@ -27,41 +27,49 @@ export function renderConsultores(container, opts = {}) {
     const alvo = (c[campo] || '').toLowerCase();
     return alvo.includes(termo);
   });
+  const listEl = document.createElement('ul');
+  listEl.className = 'consultores-list-inner';
+  listEl.setAttribute('role', 'list');
   container.innerHTML = '';
+
   filtrados.forEach(c => {
-    const card = document.createElement('div');
+    const card = document.createElement('li');
     const isSelecionado = selecionado && (c.nome || '').toLowerCase() === selecionado;
     card.className = 'consultor-card collapsed';
-    card.setAttribute('tabindex','0');
-    card.setAttribute('role','button');
-    card.setAttribute('aria-expanded','false');
+  card.setAttribute('tabindex','0');
+  card.setAttribute('role','button');
+  card.setAttribute('aria-expanded','false');
     if (isSelecionado) {
       card.classList.add('selected');
     }
 
     card.innerHTML = `
-      <div class="consultor-head">
-        <strong class="consultor-nome">${c.nome}</strong>
-        <span class="consultor-cidade"><i class="fa-solid fa-location-dot"></i> ${c.cidade}</span>
-        <span class="consultor-especialidade badge-especialidade" title="Especialidade">${c.especialidade || '—'}</span>
-        <span class="consultor-toggle-indicator" aria-hidden="true">+</span>
-      </div>
-      <div class="consultor-details" style="display:none;">
-        <span><i class="fa-solid fa-envelope"></i> ${c.email}</span>
-        <span><i class="fa-solid fa-phone"></i> ${c.telefone}</span>
-        <span><i class="fa-solid fa-map-marker-alt"></i> ${c.cidade}</span>
-        <span><i class="fa-solid fa-gears"></i> Especialidade: <strong>${c.especialidade || '—'}</strong></span>
+      <div class="consultor-content">
+        <div class="consultor-head">
+          <strong class="consultor-nome">${c.nome}</strong>
+          <span class="consultor-cidade"><i class="fa-solid fa-location-dot"></i> ${c.cidade}</span>
+          <span class="consultor-especialidade badge-especialidade" title="Especialidade">${c.especialidade || '—'}</span>
+          <span class="consultor-toggle-indicator" aria-hidden="true">+</span>
+        </div>
+        <div class="consultor-extra" role="region" aria-label="Detalhes do consultor" aria-hidden="true">
+          <span class="consultor-detail"><i class="fa-solid fa-envelope"></i> ${c.email || '—'}</span>
+          <span class="consultor-detail"><i class="fa-solid fa-phone"></i> ${c.telefone || '—'}</span>
+          <span class="consultor-detail"><i class="fa-solid fa-map-marker-alt"></i> ${c.cidade || '—'}</span>
+          <span class="consultor-detail"><i class="fa-solid fa-gears"></i> ${c.especialidade || '—'}</span>
+        </div>
       </div>`;
 
-    const details = card.querySelector('.consultor-details');
+    const extra = card.querySelector('.consultor-extra');
     const indicator = card.querySelector('.consultor-toggle-indicator');
 
     function aplicarEstado(expanded) {
       card.classList.toggle('expanded', expanded);
       card.classList.toggle('collapsed', !expanded);
-      details.style.display = expanded ? 'flex' : 'none';
       card.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       indicator.textContent = expanded ? '−' : '+';
+      if (extra) {
+        extra.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+      }
     }
     function toggle(force) {
       const expanded = force !== undefined ? !!force : !card.classList.contains('expanded');
@@ -87,17 +95,18 @@ export function renderConsultores(container, opts = {}) {
       }
     });
 
-    if (isSelecionado) {
-      aplicarEstado(true);
-    }
+    if (extra) extra.setAttribute('aria-hidden', 'true');
+    if (isSelecionado) aplicarEstado(true);
 
-    container.appendChild(card);
+    listEl.appendChild(card);
   });
   if (filtrados.length === 0) {
     const vazio = document.createElement('div');
     vazio.className = 'consultores-empty';
     vazio.textContent = 'Nenhum consultor encontrado.';
     container.appendChild(vazio);
+  } else {
+    container.appendChild(listEl);
   }
 }
 

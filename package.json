@@ -5,9 +5,11 @@
   "main": "server.js",
   "scripts": {
     "build:schemas": "node scripts/build-schemas.js",
-    "prestart": "npm run build:schemas",
+    "build:css": "tailwindcss -c tailwind.config.cjs -i ./src/tailwind.css -o ./public/styles/app.css --minify",
+    "watch:css": "tailwindcss -c tailwind.config.cjs -i ./src/tailwind.css -o ./public/styles/app.css --watch",
+    "prestart": "npm run build:schemas && npm run build:css",
     "start": "node index.js",
-    "dev": "npm run build:schemas && node index.js",
+    "dev": "npm run build:schemas && npm run build:css && node index.js",
     "test": "jest --runInBand",
     "lint": "eslint .",
     "format": "prettier --check .",
@@ -33,7 +35,10 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^30.2.0",
     "prettier": "^3.3.3",
-    "supertest": "^6.3.4"
+    "supertest": "^6.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14"
   },
   "jest": {
     "testEnvironment": "node",

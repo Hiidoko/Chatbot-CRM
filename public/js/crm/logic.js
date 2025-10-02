@@ -199,7 +199,7 @@ export class CRM {
 }
 
 // ----- Suporte a busca -----
-const CAMPOS_BUSCA = ['nome', 'email', 'telefone', 'cidade', 'maquina', 'consultor'];
+const CAMPOS_BUSCA = ['nome', 'email', 'telefone', 'cidade', 'maquina', 'consultor', 'notas'];
 function removerAcentos(str) {
   return str.normalize('NFD').replace(/\p{Diacritic}/gu, '');
 }

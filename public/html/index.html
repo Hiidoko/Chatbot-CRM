@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRM - Início</title>
-    <link rel="stylesheet" href="/styles/crm-core.css">
-    <link rel="stylesheet" href="/styles/crm-sobre.css">
-    <link rel="stylesheet" href="/styles/crm-chatbot-shell.css">
+    <link rel="stylesheet" href="/styles/app.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
@@ -71,40 +69,62 @@
     </div>
 
     <div id="editModal" class="modal">
-        <div class="modal-content">
-            <h2 id="modalTitle">Editar Cliente</h2>
-            <div id="validation-summary" class="validation-summary" aria-live="assertive" aria-atomic="true" style="display:none"></div>
-            <label>Nome:</label>
-            <input type="text" id="editNome">
-            <label>E-mail:</label>
-            <input type="text" id="editEmail">
-            <label>Telefone:</label>
-            <input type="text" id="editTelefone">
-            <label>Cidade:</label>
-            <input type="text" id="editCidade">
-            <label>Máquina:</label>
-            <select id="editMaquina">
-                <option value="">Selecione uma máquina</option>
-            </select>
-            <label>Consultor:</label>
-            <select id="editConsultor" disabled>
-                <option value="">Selecione uma máquina primeiro</option>
-            </select>
-            <label>Horário:</label>
-            <input type="text" id="editHorario">
-            <label>Status:</label>
-            <select id="editStatus">
-                <option value="novo">Novo</option>
-                <option value="em andamento">Em andamento</option>
-                <option value="contatado">Contatado</option>
-                <option value="convertido">Convertido</option>
-                <option value="perdido">Perdido</option>
-            </select>
-            <div class="modal-buttons">
-                <button id="saveEdit">Salvar</button>
-                <button id="cancelEdit">Cancelar</button>
+            <div class="modal-content">
+                <h2 id="modalTitle">Editar Cliente</h2>
+                <div id="validation-summary" class="validation-summary" aria-live="assertive" aria-atomic="true" style="display:none"></div>
+                <div class="modal-fields">
+                    <div class="modal-field">
+                        <label for="editNome">Nome</label>
+                        <input type="text" id="editNome" autocomplete="off">
+                    </div>
+                    <div class="modal-field">
+                        <label for="editEmail">E-mail</label>
+                        <input type="email" id="editEmail" autocomplete="off">
+                    </div>
+                    <div class="modal-field">
+                        <label for="editTelefone">Telefone</label>
+                        <input type="text" id="editTelefone" autocomplete="off">
+                    </div>
+                    <div class="modal-field">
+                        <label for="editCidade">Cidade</label>
+                        <input type="text" id="editCidade" autocomplete="off">
+                    </div>
+                    <div class="modal-field">
+                        <label for="editMaquina">Máquina</label>
+                        <select id="editMaquina">
+                            <option value="">Selecione uma máquina</option>
+                        </select>
+                    </div>
+                    <div class="modal-field">
+                        <label for="editConsultor">Consultor</label>
+                        <select id="editConsultor" disabled>
+                            <option value="">Selecione uma máquina primeiro</option>
+                        </select>
+                    </div>
+                    <div class="modal-field">
+                        <label for="editHorario">Horário</label>
+                        <input type="text" id="editHorario" autocomplete="off">
+                    </div>
+                    <div class="modal-field">
+                        <label for="editStatus">Status</label>
+                        <select id="editStatus">
+                            <option value="novo">Novo</option>
+                            <option value="em andamento">Em andamento</option>
+                            <option value="contatado">Contatado</option>
+                            <option value="convertido">Convertido</option>
+                            <option value="perdido">Perdido</option>
+                        </select>
+                    </div>
+                    <div class="modal-field" id="fieldNotasWrapper">
+                        <label for="editNotas">Notas</label>
+                        <textarea id="editNotas" rows="4" placeholder="Adicione observações sobre o cliente"></textarea>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button id="saveEdit">Salvar</button>
+                    <button id="cancelEdit">Cancelar</button>
+                </div>
             </div>
-        </div>
     </div>
 
     <div id="chatbot-widget">

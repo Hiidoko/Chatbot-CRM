@@ -5,31 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Autenticação • CRM Chatbot</title>
   <meta name="color-scheme" content="dark light">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd',
-              400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a'
-            }
-          }
-        }
-      }
-    };
-  </script>
-  <style>
-    .glass{background:linear-gradient(140deg,rgba(255,255,255,.10),rgba(255,255,255,.04));backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.12);} 
-    .input-base{width:100%;padding:.85rem 1rem;border-radius:.75rem;background:rgba(17,25,40,.65);border:1px solid rgba(255,255,255,.08);color:#f1f5f9;font-size:.9rem;transition:.25s;border-bottom-width:2px} 
-    .input-base:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.35);} 
-    .mode-switch{position:absolute;top:1rem;right:1rem;font-size:.55rem;letter-spacing:.1em;font-weight:600;padding:.4rem .75rem;border-radius:2rem;background:rgba(255,255,255,.08);color:#e2e8f0;cursor:pointer;transition:.25s;} .mode-switch:hover{background:rgba(255,255,255,.14);} 
-    .btn-primary{background:#2563eb;color:#fff;padding:.85rem 1rem;font-weight:600;border-radius:.75rem;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;gap:.6rem;box-shadow:0 4px 18px -4px rgba(37,99,235,.55);transition:.25s;} .btn-primary:hover{background:#1d4ed8;} 
-    .btn-ghost{background:rgba(255,255,255,.07);color:#f1f5f9;font-weight:600;border-radius:.75rem;font-size:.75rem;padding:.85rem 1rem;transition:.25s;} .btn-ghost:hover{background:rgba(255,255,255,.12);} 
-    .error-box{min-height:20px;font-size:.7rem;color:#f87171;font-weight:500;white-space:pre-line;} .success-box{min-height:20px;font-size:.7rem;color:#22c55e;font-weight:500;} 
-    .pw-toggle{position:absolute;right:.65rem;top:50%;transform:translateY(-50%);cursor:pointer;font-size:.75rem;color:#94a3b8;} .pw-toggle:hover{color:#e2e8f0;} 
-  </style>
+  <link rel="stylesheet" href="/styles/app.css">
   </head>
 <body class="h-full min-h-screen bg-[#0f172a] flex items-center justify-center p-6 text-slate-100 relative overflow-hidden">
   <div class="pointer-events-none absolute inset-0 opacity-[0.4] mix-blend-screen">
@@ -82,7 +58,7 @@
             </div>
             <div id="auth-feedback" class="error-box" aria-live="assertive"></div>
             <div class="flex gap-3 pt-2">
-              <button id="submitBtn" class="btn-primary flex-1 relative" type="submit">
+          <button id="submitBtn" class="btn btn-primary flex-1 relative" type="submit">
                 <span class="inline-flex items-center gap-2" id="submitLabel">Entrar</span>
                 <span class="hidden absolute inset-0 items-center justify-center" id="loadingSpinner">
                   <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
@@ -91,7 +67,7 @@
                   </svg>
                 </span>
               </button>
-              <button id="resetBtn" class="btn-ghost" type="reset">Limpar</button>
+              <button id="resetBtn" class="btn btn-ghost btn-auth-secondary" type="reset">Limpar</button>
             </div>
             <p class="text-[10px] text-slate-500 pt-2 leading-relaxed">Ambiente de demonstração. Não insira dados sensíveis reais.</p>
         </form>

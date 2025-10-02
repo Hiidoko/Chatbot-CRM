@@ -24,5 +24,19 @@
     "consultor": "Ana",
     "origem": "manual",
     "id": 1759415030975
+  },
+  {
+    "nome": "joao",
+    "email": "joao@mail.com",
+    "telefone": "12345678910",
+    "cidade": "maua",
+    "maquina": "Máquina B",
+    "horario": "tanto faz",
+    "status": "novo",
+    "origem": "",
+    "consultor": "João",
+    "dataCadastro": "2025-10-02T18:47:50.537Z",
+    "id": 1759430871161,
+    "notas": ""
   }
 ]

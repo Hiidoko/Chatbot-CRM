@@ -94,6 +94,16 @@ const clienteSchema = {
         enum: 'Origem inválida.'
       },
       required: false
+    },
+    notas: {
+      type: 'string',
+      maxLength: 1000,
+      normalizer: 'normalizeNotas',
+      messages: {
+        invalid: 'Notas inválidas.',
+        length: 'Notas deve ter no máximo 1000 caracteres.'
+      },
+      required: false
     }
   },
   required: ['nome','email','telefone','cidade','maquina','horario']
