@@ -95,7 +95,12 @@ export async function fetchJSON(url, opts={}) {
   const res = await fetch(url, { headers: { 'Content-Type':'application/json', ...(opts.headers||{}) }, ...opts });
   if (!res.ok) {
     let bodyText = await res.text();
-    try { const data = JSON.parse(bodyText); bodyText = data.message || bodyText; } catch {}
+    try {
+      const data = JSON.parse(bodyText);
+      bodyText = data.message || bodyText;
+    } catch (err) {
+      console.debug('[fetchJSON] Resposta não JSON', err?.message);
+    }
     const err = new Error(`HTTP ${res.status}: ${bodyText}`);
     err.status = res.status;
     throw err;

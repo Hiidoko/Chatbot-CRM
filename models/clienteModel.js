@@ -1,9 +1,13 @@
 const { selecionarConsultor } = require('./consultorModel');
 const { normalizeCliente } = require('../utils/normalizer');
 const { FileClienteRepository } = require('../repositories/clienteRepository');
-let MongoClienteRepository;
-try { ({ MongoClienteRepository } = require('../repositories/clienteRepositoryMongo')); } catch {}
 const { logger } = require('../utils/logger');
+let MongoClienteRepository;
+try {
+  ({ MongoClienteRepository } = require('../repositories/clienteRepositoryMongo'));
+} catch (err) {
+  logger.debug({ err: err?.message }, 'MongoClienteRepository indisponível, usando storage file');
+}
 
 const STORAGE = (process.env.CLIENTES_STORAGE || 'file').toLowerCase();
 const dataFile = process.env.CLIENTES_DATA_FILE || 'clientes.json';

@@ -2,10 +2,11 @@ import { CRM } from './logic.js';
 import { renderClientes, preencherModal } from './dom.js';
 import { renderConsultores, adicionarConsultor, MAQUINAS, initConsultoresSearch, CONSULTOR_LIST } from './consultores.js';
 import { validarCliente, exibirErrosModal, limparErros } from './validation.js';
-import { validarCliente as validarClienteUnit } from './validation.js';
 import { swapView } from '../viewLoader.js';
-import { debounce, mountToastManager, populateSelect, createToggleSection } from '../shared/domUtils.js';
+import { debounce, mountToastManager, populateSelect } from '../shared/domUtils.js';
 import { loadI18n, applyI18nDom, t, getCurrentLang } from '../shared/i18n.js';
+
+const validarClienteUnit = validarCliente;
 
 const crm = new CRM();
 
@@ -40,7 +41,6 @@ let listaMaquinaEl = null;
 const toast = mountToastManager({});
 const chatbotWidget = document.getElementById('chatbot-widget');
 const headerTop = document.querySelector('.crm-header-top');
-const headerTitle = headerTop ? headerTop.querySelector('h1') : null;
 const sidebar = document.getElementById('crmSidebar');
 const sidebarToggleBtn = document.getElementById('sidebarToggle');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -55,6 +55,14 @@ const savedSidebarState = localStorage.getItem(SIDEBAR_STATE_KEY);
 if(savedSidebarState==='expanded') document.body.classList.add(SIDEBAR_EXPANDED_CLASS);
 if(savedSidebarState==='collapsed') document.body.classList.add(SIDEBAR_COLLAPSED_CLASS);
 let sidebarOverlayHideTimeout = null;
+
+function safeLocalStorageSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch (err) {
+    console.debug('[CRM] Persistência localStorage indisponível', err?.message);
+  }
+}
 
 function isMobileSidebarMode() {
   return sidebarMediaQuery.matches;
@@ -101,7 +109,7 @@ function setSidebarState(state) {
     }
   }
   // Persiste
-  try { localStorage.setItem(SIDEBAR_STATE_KEY, state); } catch {}
+  safeLocalStorageSetItem(SIDEBAR_STATE_KEY, state);
   updateSidebarAccessibility();
 }
 
@@ -180,7 +188,11 @@ if (logoutBtn) {
       window.addEventListener('keydown', escHandler);
     }))();
     if (!confirmed) return;
-    try { await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); } catch {}
+    try {
+      await fetch('/api/auth/logout', { method:'POST', credentials:'include' });
+    } catch (err) {
+      console.warn('[CRM] Falha ao encerrar sessão', err?.message);
+    }
     window.location.href = '/';
   });
 }
@@ -222,9 +234,9 @@ function showUserTooltip(target,nome,email){
   hideUserTooltip();
   userTooltipEl=document.createElement('div');
   userTooltipEl.className='user-tooltip';
-  userTooltipEl.innerHTML=`<strong style=\"display:block;font-size:.65rem;letter-spacing:.5px;margin-bottom:2px;\">${nome}</strong>
-    <span style=\"font-size:.6rem;opacity:.75;word-break:break-all;\">${email}</span>
-    <button type=\"button\" data-act=\"never\" style=\"margin-top:6px;background:#374151;border:1px solid rgba(255,255,255,.1);color:#fff;font-size:.55rem;padding:4px 6px;border-radius:6px;cursor:pointer;display:inline-flex;gap:4px;align-items:center;\">Não mostrar de novo</button>`;
+    userTooltipEl.innerHTML=`<strong style="display:block;font-size:.65rem;letter-spacing:.5px;margin-bottom:2px;">${nome}</strong>
+      <span style="font-size:.6rem;opacity:.75;word-break:break-all;">${email}</span>
+      <button type="button" data-act="never" style="margin-top:6px;background:#374151;border:1px solid rgba(255,255,255,.1);color:#fff;font-size:.55rem;padding:4px 6px;border-radius:6px;cursor:pointer;display:inline-flex;gap:4px;align-items:center;">Não mostrar de novo</button>`;
   document.body.appendChild(userTooltipEl);
   const r=target.getBoundingClientRect();
   userTooltipEl.style.top=(r.top-8)+'px';
@@ -233,22 +245,22 @@ function showUserTooltip(target,nome,email){
   userTooltipTimer=setTimeout(()=> hideUserTooltip(), 6000);
   userTooltipEl.querySelector('[data-act="never"]').addEventListener('click', (e)=>{
     e.stopPropagation();
-    try { localStorage.setItem(USER_TOOLTIP_HIDE_KEY,'1'); } catch {}
+    safeLocalStorageSetItem(USER_TOOLTIP_HIDE_KEY,'1');
     hideUserTooltip();
   });
 }
 function hideUserTooltip(){ if(userTooltipEl){ userTooltipEl.remove(); userTooltipEl=null; } if(userTooltipTimer){ clearTimeout(userTooltipTimer); userTooltipTimer=null; } }
 
-function toggleUserMenu(target,nome,email){
+function toggleUserMenu(target){
   console.debug('[CRM] toggleUserMenu invoked', { hasMenu: !!userMenuEl });
   if(userMenuEl){ hideUserMenu(); return; }
   userMenuEl=document.createElement('div');
-  userMenuEl.className='user-menu';
-  userMenuEl.innerHTML=`<ul>
-    <li data-act="perfil"><i class=\"fa-solid fa-id-card\"></i> Perfil</li>
-    <li data-act="refresh"><i class=\"fa-solid fa-rotate\"></i> Atualizar sessão</li>
-    <li class="danger" data-act="logout"><i class=\"fa-solid fa-right-from-bracket\"></i> Sair</li>
-  </ul>`;
+    userMenuEl.className='user-menu';
+    userMenuEl.innerHTML=`<ul>
+      <li data-act="perfil"><i class="fa-solid fa-id-card"></i> Perfil</li>
+      <li data-act="refresh"><i class="fa-solid fa-rotate"></i> Atualizar sessão</li>
+      <li class="danger" data-act="logout"><i class="fa-solid fa-right-from-bracket"></i> Sair</li>
+    </ul>`;
   document.body.appendChild(userMenuEl);
   positionUserMenu(target);
   const onClick=(e)=>{
@@ -283,9 +295,7 @@ userInfoBox?.addEventListener('click', (e)=>{
   const mini = userInfoBox.querySelector('.user-mini');
   if(!mini) return;
   if(e.target.closest('.user-mini')){
-    const nome = mini.querySelector('strong')?.textContent || 'Usuário';
-    const email = mini.querySelector('span')?.textContent || '';
-    toggleUserMenu(mini,nome,email);
+    toggleUserMenu(mini);
   }
 });
 if(!window.__crmUserGlobalDelegation){
@@ -294,20 +304,17 @@ if(!window.__crmUserGlobalDelegation){
     const trigger = e.target.closest('.user-mini');
     if(!trigger) return;
     if(!trigger.parentElement || trigger.parentElement.id!=='userInfo') return;
-    const nome = trigger.querySelector('strong')?.textContent || 'Usuário';
-    const email = trigger.querySelector('span')?.textContent || '';
-    toggleUserMenu(trigger,nome,email);
+    toggleUserMenu(trigger);
   });
 }
 
 function inicializarUserInteractions(nome,email){
   const mini = userInfoBox.querySelector('.user-mini'); if(!mini) return;
-  const avatarEl = mini.querySelector('.user-avatar');
   console.debug('[CRM] inicializarUserInteractions found mini, binding events');
   mini.onmouseenter=()=> showUserTooltip(mini,nome,email);
   mini.onmouseleave=()=> hideUserTooltip();
-  mini.onclick=(e)=> { e.stopPropagation(); toggleUserMenu(mini,nome,email); };
-  mini.onkeydown=(e)=> { if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleUserMenu(mini,nome,email);} };
+  mini.onclick=(e)=> { e.stopPropagation(); toggleUserMenu(mini); };
+  mini.onkeydown=(e)=> { if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleUserMenu(mini);} };
   mini.setAttribute('tabindex','0');
   mini.setAttribute('role','button');
   mini.setAttribute('aria-label','Abrir menu do usuário');
@@ -344,7 +351,11 @@ async function confirmarLogoutMenu(){
     window.addEventListener('keydown', escHandler);
   }))();
   if(!confirmed) return;
-  try { await fetch('/api/auth/logout',{method:'POST',credentials:'include'}); } catch {}
+  try {
+    await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
+  } catch (err) {
+    console.warn('[CRM] Logout via menu falhou', err?.message);
+  }
   window.location.href='/';
 }
 
@@ -355,8 +366,6 @@ window.addEventListener('keydown', e => {
   }
 });
 
-let headerFilters = null;
-let advancedFiltersWrapper = null;
 let analyticsPanelsEl = null;
 let emptyStateEl = null;
 let emptyMsgEl = null;
@@ -1208,12 +1217,6 @@ saveEditBtn.onclick = async () => {
 cancelEditBtn.onclick = () => { limparErros(fields); fecharModal(); };
 window.onclick = e => { if (e.target === editModal) { limparErros(fields); fecharModal(); } };
 
-// Renderização de consultores (módulo separado)
-function mostrarConsultores() {
-  const consultoresList = document.getElementById('consultores-list');
-  renderConsultores(consultoresList);
-}
-
 const menuClientes = document.getElementById('menu-clientes');
 const menuConsultores = document.getElementById('menu-consultores');
 const menuSobre = document.getElementById('menu-sobre');
@@ -1510,8 +1513,6 @@ function bindClientesRefs() {
   listaConsultorEl = document.getElementById('lista-consultor');
   listaStatusFiltradoEl = document.getElementById('lista-status-filtrado');
   listaMaquinaEl = document.getElementById('lista-maquina');
-  headerFilters = document.querySelector('.crm-header');
-  advancedFiltersWrapper = document.getElementById('advancedFiltersWrapper');
   analyticsPanelsEl = document.getElementById('analytics-panels');
   emptyStateEl = document.getElementById('empty-clients');
   emptyMsgEl = document.getElementById('empty-clients-msg');
@@ -1536,7 +1537,7 @@ function inicializarCollapseClientesHeader() {
     const collapsed = force !== undefined ? force : wrapper.dataset.collapsed === 'false';
     wrapper.dataset.collapsed = collapsed ? 'true' : 'false';
     toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-  toggleBtn.setAttribute('aria-pressed', collapsed ? 'false' : 'true');
+    toggleBtn.setAttribute('aria-pressed', collapsed ? 'false' : 'true');
     localStorage.setItem('crm-clientes-header-collapsed', collapsed ? 'true' : 'false');
     if (analyticsPanelsEl) analyticsPanelsEl.setAttribute('aria-hidden', collapsed ? 'true':'false');
   }
@@ -1718,7 +1719,6 @@ window.initConsultores = function initConsultores() {
 function prepararCampoEspecialidade() {
   if (!editModal) return;
   if (!campoEspecialidadeWrapper) {
-    const maquinaInput = fields.maquina;
     campoEspecialidadeWrapper = document.createElement('div');
     campoEspecialidadeWrapper.className = 'field-especialidade-wrapper';
     campoEspecialidadeWrapper.innerHTML = `

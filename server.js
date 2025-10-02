@@ -37,14 +37,6 @@ if (NO_DB_MODE) {
   });
 }
 
-function maskMongo(url) {
-  try {
-    const u = new URL(url.replace('mongodb+srv://','https://').replace('mongodb://','http://'));
-    const auth = u.username ? (u.username + (u.password ? ':***' : '')) : '';
-    return `${u.protocol.startsWith('https') ? 'mongodb+srv:' : 'mongodb:'}//${auth ? auth + '@' : ''}${u.host}${u.pathname}`;
-  } catch { return '***'; }
-}
-
 // (Conexão Mongo movida acima, condicionada a NO_DB_MODE)
 const pkg = require('./package.json');
 
@@ -124,7 +116,7 @@ app.get('/sobre', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'html', 'sobre.html'));
 });
 
-app.use((req, res, next) => {
+app.use((req, res) => {
   if (req.path.startsWith('/api/')) return res.status(404).json({ message: "Rota não encontrada" });
   res.status(404).send('Página não encontrada');
 });

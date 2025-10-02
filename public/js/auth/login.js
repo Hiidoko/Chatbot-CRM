@@ -40,6 +40,7 @@ form.addEventListener('submit', async (e) => {
   feedback.textContent='';
   const fd = new FormData(form);
   const payload = Object.fromEntries(fd.entries());
+  let manterSpinnerAposLogin = false;
   try {
     submitBtn.disabled = true;
     submitLabel.classList.add('hidden');
@@ -56,16 +57,18 @@ form.addEventListener('submit', async (e) => {
       feedback.textContent='Login efetuado...';
       feedback.classList.add('success');
       // Redireciona direto para o app (tela de boas-vindas removida)
+      manterSpinnerAposLogin = true;
       setTimeout(()=> { window.location.href = '/app'; }, 250);
     }
   } catch (err) {
     feedback.textContent=err.message || 'Erro ao processar.';
   } finally {
-    if (modo === 'login' && feedback.classList.contains('success')) return; // mantém spinner até redirecionar
-    submitBtn.disabled = false;
-    submitLabel.classList.remove('hidden');
-    loadingSpinner.classList.add('hidden');
-    loadingSpinner.classList.remove('flex');
+    if (!manterSpinnerAposLogin) {
+      submitBtn.disabled = false;
+      submitLabel.classList.remove('hidden');
+      loadingSpinner.classList.add('hidden');
+      loadingSpinner.classList.remove('flex');
+    }
   }
 });
 

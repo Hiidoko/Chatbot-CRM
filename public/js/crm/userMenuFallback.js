@@ -2,7 +2,6 @@
 (function(){
   let tries = 0;
   const MAX_TRIES = 50; // ~5s se intervalo 100ms
-  function log(){ /* console.debug('[FallbackUserMenu]', ...arguments);*/ }
   function ensureUserMini(){
     const userInfo = document.getElementById('userInfo');
     if(!userInfo){ if(++tries<MAX_TRIES) return setTimeout(ensureUserMini,100); return; }
@@ -38,15 +37,13 @@
   let menu=null;
   function openMenu(trigger){
     if(menu){ closeMenu(); return; }
-    const nome = trigger.querySelector('strong')?.textContent || 'Usuário';
-    const email = trigger.querySelector('span')?.textContent || '';
     menu = document.createElement('div');
     menu.className='user-menu';
-    menu.innerHTML=`<ul>
-      <li data-act="perfil"><i class=\"fa-solid fa-id-card\"></i> Perfil</li>
-      <li data-act="refresh"><i class=\"fa-solid fa-rotate\"></i> Atualizar sessão</li>
-      <li class="danger" data-act="logout"><i class=\"fa-solid fa-right-from-bracket\"></i> Sair</li>
-    </ul>`;
+      menu.innerHTML=`<ul>
+        <li data-act="perfil"><i class="fa-solid fa-id-card"></i> Perfil</li>
+        <li data-act="refresh"><i class="fa-solid fa-rotate"></i> Atualizar sessão</li>
+        <li class="danger" data-act="logout"><i class="fa-solid fa-right-from-bracket"></i> Sair</li>
+      </ul>`;
     document.body.appendChild(menu);
     position(trigger);
     menu.addEventListener('click', (e)=>{

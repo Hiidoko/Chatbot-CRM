@@ -9,7 +9,11 @@ async function authOptional(req, res, next) {
     const payload = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(payload.sub);
     if (user) req.user = user;
-  } catch {}
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'test') {
+      console.debug('[authOptional] Token inválido ou expirado', err.message);
+    }
+  }
   next();
 }
 

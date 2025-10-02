@@ -65,15 +65,15 @@
   function outsideHandler(e){ const menu = document.getElementById(MENU_ID); if(!menu) return; if(!menu.contains(e.target) && !e.target.closest('[data-user-trigger]')) closeMenu(); }
   function escHandler(e){ if(e.key==='Escape') closeMenu(); }
 
-  function openMenu(trigger,user){
+  function openMenu(trigger, _user){
     closeMenu();
     const menu = createEl('div','user-menu');
     menu.id=MENU_ID;
-    menu.innerHTML = `<ul>
-      <li data-act="perfil"><i class=\"fa-solid fa-id-card\"></i> Perfil</li>
-      <li data-act="refresh"><i class=\"fa-solid fa-rotate\"></i> Atualizar sessão</li>
-      <li class="danger" data-act="logout"><i class=\"fa-solid fa-right-from-bracket\"></i> Sair</li>
-    </ul>`;
+      menu.innerHTML = `<ul>
+        <li data-act="perfil"><i class="fa-solid fa-id-card"></i> Perfil</li>
+        <li data-act="refresh"><i class="fa-solid fa-rotate"></i> Atualizar sessão</li>
+        <li class="danger" data-act="logout"><i class="fa-solid fa-right-from-bracket"></i> Sair</li>
+      </ul>`;
     document.body.appendChild(menu);
     positionMenu(trigger,menu);
     // Animação: seta aparece após reflow
