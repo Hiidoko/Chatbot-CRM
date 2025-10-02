@@ -70,6 +70,6 @@ function formatarData(iso) {
   try {
     const d = new Date(iso);
     if (isNaN(d.getTime())) return '—';
-    return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', timeZone:'UTC' });
   } catch { return '—'; }
 }

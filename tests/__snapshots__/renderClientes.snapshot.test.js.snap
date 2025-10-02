@@ -11,7 +11,7 @@ exports[`renderClientes (estrutura semântica) gera <ul><li> com atributos ARIA 
         <span class="field pill" data-field="maquina"><i class="fa-solid fa-gears"></i> Máquina A</span>
         <span class="field pill" data-field="horario"><i class="fa-solid fa-clock"></i> Manhã</span>
         <span class="field pill" data-field="consultor"><i class="fa-solid fa-user-tie"></i> Consultor X</span>
-        <span class="field meta" data-field="dataCadastro"><i class="fa-solid fa-calendar"></i> 31/12/2023</span>
+        <span class="field meta" data-field="dataCadastro"><i class="fa-solid fa-calendar"></i> 01/01/2024</span>
       </div>
       <div class="cliente-actions">
         <button class="edit" data-id="1"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
@@ -26,7 +26,7 @@ exports[`renderClientes (estrutura semântica) gera <ul><li> com atributos ARIA 
         <span class="field pill" data-field="maquina"><i class="fa-solid fa-gears"></i> Máquina A</span>
         <span class="field pill" data-field="horario"><i class="fa-solid fa-clock"></i> Manhã</span>
         <span class="field pill" data-field="consultor"><i class="fa-solid fa-user-tie"></i> Consultor X</span>
-        <span class="field meta" data-field="dataCadastro"><i class="fa-solid fa-calendar"></i> 31/12/2023</span>
+        <span class="field meta" data-field="dataCadastro"><i class="fa-solid fa-calendar"></i> 01/01/2024</span>
       </div>
       <div class="cliente-actions">
         <button class="edit" data-id="2"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
