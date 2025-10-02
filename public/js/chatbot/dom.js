@@ -1,7 +1,7 @@
 export function botMessage(container, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", "bot");
-  msg.innerHTML = `<div class="avatar" style="background-image:url('img/user.png')"></div>
+  msg.innerHTML = `<div class="avatar" style="background-image:url('/img/user.png')"></div>
                    <div class="text">${text}</div>`;
   container.appendChild(msg);
   container.scrollTop = container.scrollHeight;
@@ -11,7 +11,7 @@ export function userMessage(container, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", "user");
   msg.innerHTML = `<div class="text">${text}</div>
-                   <div class="avatar" style="background-image:url('img/user.png')"></div>`;
+                   <div class="avatar" style="background-image:url('/img/user.png')"></div>`;
   container.appendChild(msg);
   container.scrollTop = container.scrollHeight;
 }
@@ -20,7 +20,7 @@ export function mostrarOpcoesMaquina(container, callback) {
   const msg = document.createElement('div');
   msg.classList.add('message','bot');
   msg.innerHTML = `
-    <div class="avatar" style="background-image:url('img/user.png')"></div>
+  <div class="avatar" style="background-image:url('/img/user.png')"></div>
     <div class="text">
       Selecione a máquina de interesse:
       <div class="maquina-select-wrapper">
@@ -59,7 +59,7 @@ export function mostrarDigitando(container) {
   const wrap = document.createElement('div');
   wrap.className = 'message bot typing-indicator';
   wrap.innerHTML = `
-    <div class="avatar" style="background-image:url('img/user.png')"></div>
+  <div class="avatar" style="background-image:url('/img/user.png')"></div>
     <div class="text"><div class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;
   container.appendChild(wrap);
   container.scrollTop = container.scrollHeight;

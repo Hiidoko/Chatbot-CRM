@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "nome": "joao",
+    "email": "joao@mail.com",
+    "telefone": "12345678910",
+    "cidade": "maua",
+    "maquina": "Máquina C",
+    "horario": "tanto faz",
+    "status": "novo",
+    "dataCadastro": "2025-10-02T14:23:05.030Z",
+    "consultor": "João",
+    "origem": "manual",
+    "id": 1759414985192
+  },
+  {
+    "nome": "Use",
+    "email": "use@mail.com",
+    "telefone": "1123456789",
+    "cidade": "use",
+    "maquina": "Máquina A",
+    "horario": "Use",
+    "status": "novo",
+    "dataCadastro": "2025-10-02T14:23:44.354Z",
+    "consultor": "Ana",
+    "origem": "manual",
+    "id": 1759415030975
+  }
+]

@@ -25,8 +25,10 @@ describe('API /api/clientes integração', () => {
       horario: 'Manhã',
       status: 'novo'
     }];
-    const postRes = await request(app).post('/api/clientes').send(novo).expect(201);
-    expect(postRes.body.total).toBe(1);
+  const postRes = await request(app).post('/api/clientes').send(novo).expect(201);
+  expect(postRes.body.total).toBe(1);
+  expect(Array.isArray(postRes.body.data)).toBe(true);
+  expect(postRes.body.data[0].id).toBeDefined();
 
     // Listar paginado
     const listRes = await request(app).get('/api/clientes?pageSize=10').expect(200);
@@ -53,12 +55,14 @@ describe('API /api/clientes integração', () => {
       maquina: 'Máquina B',
       horario: 'Tarde'
     }];
-    const postRes = await request(app).post('/api/clientes').send(semStatus).expect(201);
-    expect(postRes.body.total).toBe(1);
+  const postRes = await request(app).post('/api/clientes').send(semStatus).expect(201);
+  expect(postRes.body.total).toBe(1);
+  expect(postRes.body.data[0].origem).toBe('chatbot');
     const listRes = await request(app).get('/api/clientes?pageSize=10').expect(200);
     const c = listRes.body.data.find(x => x.nome === 'Lead Sem Status');
     expect(c).toBeDefined();
     expect(c.status).toBe('novo');
-    expect(c.origem).toBe('manual');
+  // Agora origem default para POST público vira 'chatbot'
+  expect(c.origem).toBe('chatbot');
   });
 });

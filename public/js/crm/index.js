@@ -368,6 +368,26 @@ function notificarClientesAtualizados() {
   document.dispatchEvent(new CustomEvent(CLIENTES_EVENT));
 }
 
+let sincronizandoClientes = false;
+async function sincronizarClientesRemotos({ silent = false, force = false } = {}) {
+  if (sincronizandoClientes) return;
+  sincronizandoClientes = true;
+  if (totalClientes) totalClientes.dataset.loading = '1';
+  try {
+    await crm.carregarRemoto({ force });
+    atualizarFiltrosDinamicos?.();
+    atualizarLista();
+    notificarClientesAtualizados();
+    if (!silent) toast('Clientes sincronizados com o servidor','info');
+  } catch (err) {
+    console.error('[CRM] Falha ao sincronizar clientes com o servidor', err);
+    if (!silent) toast('Não foi possível sincronizar clientes agora','erro');
+  } finally {
+    sincronizandoClientes = false;
+    if (totalClientes) totalClientes.dataset.loading = '0';
+  }
+}
+
 // Lazy criação de modal de confirmação reutilizável
 let confirmDialogEl = null;
 function criarConfirmDialog() {
@@ -413,7 +433,8 @@ const fields = {
   telefone: document.getElementById('editTelefone'),
   cidade: document.getElementById('editCidade'),
   maquina: document.getElementById('editMaquina'), 
-  horario: document.getElementById('editHorario')
+  horario: document.getElementById('editHorario'),
+  consultor: document.getElementById('editConsultor')
 };
 fields.status = document.getElementById('editStatus');
 let campoEspecialidadeWrapper = null; 
@@ -421,6 +442,130 @@ let campoEspecialidadeInput = null;
 let campoEspecialidadeList = null;  
 let campoEspecialidadeHidden = null;  
 let especialidadeActiveIndex = -1;  
+
+function popularSelectMaquinas(valorAtual = '') {
+  if (!fields.maquina) return;
+  const atual = valorAtual || fields.maquina.value || '';
+  const select = fields.maquina;
+  const existente = new Set();
+  select.innerHTML = '';
+
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = 'Selecione uma máquina';
+  select.appendChild(placeholder);
+
+  MAQUINAS.forEach(item => {
+    if (existente.has(item)) return;
+    existente.add(item);
+    const opt = document.createElement('option');
+    opt.value = item;
+    opt.textContent = item;
+    select.appendChild(opt);
+  });
+
+  if (atual) {
+    if (!existente.has(atual)) {
+      const optCustom = document.createElement('option');
+      optCustom.value = atual;
+      optCustom.textContent = `${atual} (não cadastrada)`;
+      select.appendChild(optCustom);
+    }
+    select.value = atual;
+  } else {
+    select.value = '';
+  }
+}
+
+function atualizarSelectConsultores(maquinaSelecionada = '', consultorSelecionado = '') {
+  if (!fields.consultor) return;
+  const select = fields.consultor;
+  const maquina = (maquinaSelecionada || '').trim();
+  const atual = (consultorSelecionado || '').trim();
+  select.innerHTML = '';
+
+  if (!maquina) {
+    select.disabled = true;
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'Selecione uma máquina primeiro';
+    select.appendChild(opt);
+    select.value = '';
+    return;
+  }
+
+  const lista = CONSULTOR_LIST.filter(c => (c.especialidade || '').toLowerCase() === maquina.toLowerCase())
+    .sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+
+  if (lista.length === 0) {
+    select.disabled = true;
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'Nenhum consultor disponível';
+    select.appendChild(opt);
+    select.value = '';
+    return;
+  }
+
+  select.disabled = false;
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = 'Selecione um consultor';
+  select.appendChild(placeholder);
+
+  lista.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.nome;
+    opt.textContent = item.nome;
+    select.appendChild(opt);
+  });
+
+  if (atual) {
+    const existe = lista.some(item => item.nome === atual);
+    if (!existe) {
+      const optExtra = document.createElement('option');
+      optExtra.value = atual;
+      optExtra.textContent = `${atual} (especialidade diferente)`;
+      select.appendChild(optExtra);
+    }
+    select.value = atual;
+  } else {
+    select.value = '';
+  }
+}
+
+function resetConsultorField() {
+  if (!fields.consultor) return;
+  fields.consultor.disabled = true;
+  fields.consultor.innerHTML = '<option value="">Selecione uma máquina primeiro</option>';
+  fields.consultor.value = '';
+}
+
+popularSelectMaquinas(fields.maquina?.value || '');
+if (fields.maquina && fields.maquina.value) {
+  atualizarSelectConsultores(fields.maquina.value, fields.consultor?.value || '');
+} else {
+  resetConsultorField();
+}
+
+if (fields.maquina) {
+    fields.maquina.addEventListener('change', () => {
+      atualizarSelectConsultores(fields.maquina.value, '');
+      if (fields.consultor) {
+        fields.consultor.classList.remove('input-error');
+        const next = fields.consultor.nextElementSibling;
+        if (next && next.classList.contains('field-error')) next.remove();
+      }
+    });
+}
+
+if (fields.consultor) {
+  fields.consultor.addEventListener('change', () => {
+    fields.consultor.classList.remove('input-error');
+    const next = fields.consultor.nextElementSibling;
+    if (next && next.classList.contains('field-error')) next.remove();
+  });
+}
 
 let editId = null;
 let isNew = false;
@@ -454,21 +599,25 @@ function selecionarConsultorPorMaquina(maquina) {
   return escolhido?.nome || null;
 }
 
-function reatribuirConsultoresClientesExistentes() {
+async function reatribuirConsultoresClientesExistentes() {
   let alterados = 0;
-  crm.listar().forEach(cli => {
-    if (!cli.maquina) return;
+  for (const cli of crm.listar()) {
+    if (!cli.maquina) continue;
     const atual = cli.consultor;
     const objAtual = atual && CONSULTOR_LIST.find(c => c.nome === atual);
-    const precisaReatribuir = !atual || !objAtual || (objAtual.especialidade||'').toLowerCase() !== cli.maquina.toLowerCase();
+    const precisaReatribuir = !atual || !objAtual || (objAtual.especialidade || '').toLowerCase() !== (cli.maquina || '').toLowerCase();
     if (precisaReatribuir) {
       const novo = selecionarConsultorPorMaquina(cli.maquina);
       if (novo && novo !== atual) {
-        crm.atualizar(cli.id, { consultor: novo });
-        alterados++;
+        try {
+          await crm.atualizar(cli.id, { consultor: novo });
+          alterados++;
+        } catch (err) {
+          console.error('[CRM] Falha ao reatribuir consultor automaticamente', err);
+        }
       }
     }
-  });
+  }
   return alterados;
 }
 
@@ -733,6 +882,8 @@ function abrirModalEdicao(id) {
   modalTitle.textContent = 'Editar Cliente';
   const cliente = crm.obter(id);
   preencherModal(cliente, fields);
+  restaurarCamposCliente();
+  atualizarSelectConsultores(cliente?.maquina || '', cliente?.consultor || '');
   mostrarModal();
 }
 
@@ -834,7 +985,7 @@ function limparErrosInline(card) {
   card.querySelectorAll('.inline-error').forEach(e => e.remove());
 }
 
-function salvarEdicaoInline(card, id) {
+async function salvarEdicaoInline(card, id) {
   const data = coletarEdicaoInline(card);
   const { valid, errors, value } = validarInline(data);
   if (!valid) { exibirErrosInline(card, errors); return; }
@@ -847,11 +998,16 @@ function salvarEdicaoInline(card, id) {
       if (novoCons) payload.consultor = novoCons; else if (!original.consultor) payload.consultor = null;
     }
   }
-  crm.atualizar(id, payload);
-  notificarClientesAtualizados();
-  toast('Alterações salvas','sucesso');
-  inlineEditingId = null;
-  atualizarLista();
+  try {
+    await crm.atualizar(id, payload);
+    notificarClientesAtualizados();
+    toast('Alterações salvas','sucesso');
+    inlineEditingId = null;
+    atualizarLista();
+  } catch (err) {
+    console.error('[CRM] Falha ao salvar edição inline', err);
+    toast('Não foi possível salvar as alterações','erro');
+  }
 }
 
 function cancelarEdicaoInline() {
@@ -859,14 +1015,28 @@ function cancelarEdicaoInline() {
   atualizarLista();
 }
 
-function excluirCliente(id) {
-  confirmar('Tem certeza que deseja excluir este cliente?').then(ok => {
-    if (!ok) return;
-    crm.remover(id);
+async function excluirCliente(id) {
+  const ok = await confirmar('Tem certeza que deseja excluir este cliente?');
+  if (!ok) return;
+  try {
+    await crm.remover(id);
     notificarClientesAtualizados();
     atualizarLista();
     toast('Cliente excluído','sucesso');
-  });
+  } catch (err) {
+    console.error('[CRM] Falha ao excluir cliente', err);
+    const offline = crm.obter(id);
+    if (offline?.__offline) {
+      const removed = crm.removerOffline(id);
+      if (removed) {
+        notificarClientesAtualizados();
+        atualizarLista();
+        toast('Cliente offline removido localmente','info');
+        return;
+      }
+    }
+    toast('Não foi possível excluir o cliente agora','erro');
+  }
 }
 
 addClientBtn.onclick = () => {
@@ -876,7 +1046,13 @@ addClientBtn.onclick = () => {
   modalTitle.textContent = 'Novo Cliente';
   Object.values(fields).forEach(i => i && (i.value = ''));
   if (fields.status) fields.status.value = 'novo';
+  popularSelectMaquinas('');
+  resetConsultorField();
+  atualizarSelectConsultores('', '');
+  mostrarCampoComLabel(fields.consultor);
+  fields.consultor?.classList.remove('input-error');
   limparErros(fields);
+  restaurarCamposCliente();
   mostrarModal();
 };
 
@@ -894,12 +1070,14 @@ function abrirModalNovoConsultor() {
   ocultarCampoComLabel(fields.maquina);
   ocultarCampoComLabel(fields.horario);
   ocultarCampoComLabel(fields.status);
+  ocultarCampoComLabel(fields.consultor);
+  resetConsultorField();
   prepararCampoEspecialidade();
   limparErros(fields);
   mostrarModal();
 }
 
-saveEditBtn.onclick = () => {
+saveEditBtn.onclick = async () => {
   if (modoConsultor) {
     const nome = fields.nome.value.trim();
     if (!nome) { exibirErrosModal([{ field:'nome', message:'Nome é obrigatório'}], fields); return; }
@@ -927,6 +1105,7 @@ saveEditBtn.onclick = () => {
     restaurarCamposCliente();
     return;
   }
+  const consultorSelecionado = fields.consultor ? fields.consultor.value : '';
   const dados = {
     nome: fields.nome.value,
     email: fields.email.value,
@@ -934,13 +1113,19 @@ saveEditBtn.onclick = () => {
     cidade: fields.cidade.value,
     maquina: fields.maquina.value,
     horario: fields.horario.value,
-    status: fields.status.value
+    status: fields.status.value,
+    consultor: consultorSelecionado
   };
+  if (fields.consultor && !fields.consultor.disabled && !consultorSelecionado) {
+    exibirErrosModal([{ field: 'consultor', message: 'Selecione um consultor' }], fields);
+    return;
+  }
   const { valid, errors, value } = validarCliente(dados);
   if (!valid) {
     exibirErrosModal(errors, fields);
     return;
   }
+  value.consultor = consultorSelecionado;
   const statusEntrada = dados.status ?? 'novo';
   if (typeof statusEntrada === 'string') {
     const trimmed = statusEntrada.trim();
@@ -950,33 +1135,66 @@ saveEditBtn.onclick = () => {
   }
   limparErros(fields);
   let novoId = null;
+  let fallbackOffline = false;
   if (isNew) {
     if (!value.consultor && value.maquina) {
       const cons = selecionarConsultorPorMaquina(value.maquina);
       if (cons) value.consultor = cons;
     }
     value.status = value.status || 'novo';
-    novoId = crm.adicionar(value);
+    value.origem = value.origem || 'manual';
+    try {
+      const criado = await crm.adicionar(value);
+      novoId = criado?.id ?? null;
+      toast('Cliente adicionado com sucesso','sucesso');
+    } catch (err) {
+      console.error('[CRM] Falha ao adicionar cliente via API, usando fallback local', err);
+      const offline = crm.adicionarOffline(value);
+      novoId = offline?.id ?? null;
+      fallbackOffline = true;
+      toast('Cliente salvo localmente (sem conexão). Sincronize quando possível.','info');
+    }
     notificarClientesAtualizados();
-    toast('Cliente adicionado com sucesso','sucesso');
   } else {
     const original = crm.obter(editId);
     if (value.maquina) {
-      const objAtual = original.consultor && CONSULTOR_LIST.find(c => c.nome === original.consultor);
+      const objAtual = original?.consultor && CONSULTOR_LIST.find(c => c.nome === original.consultor);
       const incompat = objAtual && objAtual.especialidade && objAtual.especialidade !== value.maquina;
-      if (!original.consultor || original.maquina !== value.maquina || incompat) {
+      const precisaReatribuir = !consultorSelecionado && (!original?.consultor || original.maquina !== value.maquina || incompat);
+      if (precisaReatribuir) {
         const novoCons = selecionarConsultorPorMaquina(value.maquina);
         if (novoCons) value.consultor = novoCons;
       }
     }
-    crm.atualizar(editId, value);
+    try {
+      await crm.atualizar(editId, value);
+      toast('Cliente atualizado','sucesso');
+    } catch (err) {
+      console.error('[CRM] Falha ao atualizar cliente', err);
+      const offline = crm.obter(editId);
+      if (offline?.__offline) {
+        const ok = crm.atualizarOffline(editId, value);
+        if (ok) {
+          fallbackOffline = true;
+          toast('Cliente offline atualizado localmente','info');
+        } else {
+          toast('Não foi possível atualizar o cliente agora','erro');
+          return;
+        }
+      } else {
+        toast('Não foi possível atualizar o cliente agora','erro');
+        return;
+      }
+    }
     notificarClientesAtualizados();
     novoId = editId;
-    toast('Cliente atualizado','sucesso');
   }
   fecharModal();
   atualizarFiltrosDinamicos();
   atualizarLista();
+  if (!fallbackOffline) {
+    sincronizarClientesRemotos({ silent: true }).catch(err => console.debug('[CRM] Sync pós-salvamento ignorada', err));
+  }
   requestAnimationFrame(()=>{
     const card = document.querySelector(`.cliente-card button.edit[data-id="${novoId}"]`)?.closest('.cliente-card');
     if (card) {
@@ -1040,6 +1258,11 @@ async function showSection(section, opts = {}) {
         modalTitle.textContent = 'Novo Cliente';
         Object.values(fields).forEach(i => i && (i.value = ''));
         if (fields.status) fields.status.value = 'novo';
+        popularSelectMaquinas('');
+        resetConsultorField();
+        atualizarSelectConsultores('', '');
+        mostrarCampoComLabel(fields.consultor);
+        fields.consultor?.classList.remove('input-error');
         limparErros(fields);
         restaurarCamposCliente();
         mostrarModal();
@@ -1138,11 +1361,31 @@ window.addEventListener('click', e => {
   }
 });
 
-window.addEventListener('message', event => {
+window.addEventListener('message', async event => {
   if (event.data && event.data.tipo === 'novoCliente' && event.data.cliente) {
     const bruto = { ...event.data.cliente };
-  if (!bruto.status) bruto.status = 'novo';
-  bruto.origem = 'chatbot';
+    const veioDoServidor = !!bruto.id;
+    if (!bruto.status) bruto.status = 'novo';
+    if (!bruto.origem) bruto.origem = 'chatbot';
+
+    if (veioDoServidor) {
+      if (!bruto.dataCadastro) bruto.dataCadastro = new Date().toISOString();
+      crm.registrarRemoto(bruto);
+      toast(t('toast.leadRecebido') || 'Novo cliente recebido do chatbot','info');
+      notificarClientesAtualizados();
+      atualizarFiltrosDinamicos();
+      atualizarLista();
+      requestAnimationFrame(() => {
+        const card = document.querySelector(`.cliente-card button.edit[data-id="${bruto.id}"]`)?.closest('.cliente-card');
+        if (card) {
+          card.classList.add('flash-new');
+          card.scrollIntoView({ behavior:'smooth', block:'center' });
+          setTimeout(()=> card.classList.remove('flash-new'), 1800);
+        }
+      });
+      return;
+    }
+
     const { valid, value } = validarCliente(bruto);
     if (!valid) {
       toast(t('toast.leadInvalido') || 'Cliente recebido do chatbot com dados inválidos','erro');
@@ -1152,11 +1395,23 @@ window.addEventListener('message', event => {
     if (bruto.status) cliente.status = bruto.status;
     if (bruto.consultor) cliente.consultor = bruto.consultor;
     aplicarDefaultsCliente(cliente);
-    const novoId = crm.adicionar(cliente);
+    let novoId = null;
+    let fallback = false;
+    try {
+      const criado = await crm.adicionar(cliente);
+      novoId = criado?.id ?? null;
+      toast(t('toast.leadRecebido') || 'Novo cliente recebido do chatbot','info');
+    } catch (err) {
+      console.error('[CRM] Falha ao persistir lead recebido do chatbot, salvando offline', err);
+      const offline = crm.adicionarOffline(cliente);
+      novoId = offline?.id ?? null;
+      fallback = true;
+      toast(t('toast.leadFallback') || 'Lead recebido em modo offline. Sincronize depois.','info');
+    }
     notificarClientesAtualizados();
     atualizarFiltrosDinamicos();
     atualizarLista();
-  toast(t('toast.leadRecebido') || 'Novo cliente recebido do chatbot','info');
+    if (!fallback) sincronizarClientesRemotos({ silent: true }).catch(err => console.debug('[CRM] Sync pós-chatbot ignorada', err));
     requestAnimationFrame(() => {
       const card = document.querySelector(`.cliente-card button.edit[data-id="${novoId}"]`)?.closest('.cliente-card');
       if (card) {
@@ -1314,14 +1569,16 @@ window.initClientes = function initClientes() {
   contarFiltrosAtivos();
   atualizarLista();
   inicializarCollapseClientesHeader();
-  if (!window.__consultoresReatribuicaoFeita) {
-    const qtd = reatribuirConsultoresClientesExistentes();
-    if (qtd > 0) {
-      atualizarLista();
-      toast(`${qtd} cliente(s) tiveram consultor atribuído automaticamente`,`info`);
+  sincronizarClientesRemotos({ silent: true, force: true }).then(async () => {
+    if (!window.__consultoresReatribuicaoFeita) {
+      const qtd = await reatribuirConsultoresClientesExistentes();
+      if (qtd > 0) {
+        atualizarLista();
+        toast(`${qtd} cliente(s) tiveram consultor atribuído automaticamente`,`info`);
+      }
+      window.__consultoresReatribuicaoFeita = true;
     }
-    window.__consultoresReatribuicaoFeita = true;
-  }
+  }).catch(err => console.debug('[CRM] Sync inicial falhou', err));
 };
 
 window.initConsultores = function initConsultores() {
@@ -1593,7 +1850,14 @@ function restaurarCamposCliente() {
   mostrarCampoComLabel(fields.maquina);
   mostrarCampoComLabel(fields.horario);
   mostrarCampoComLabel(fields.status);
+  mostrarCampoComLabel(fields.consultor);
   if (campoEspecialidadeWrapper) campoEspecialidadeWrapper.style.display = 'none';
+  popularSelectMaquinas(fields.maquina?.value || '');
+  if (fields.maquina && fields.maquina.value) {
+    atualizarSelectConsultores(fields.maquina.value, fields.consultor?.value || '');
+  } else {
+    resetConsultorField();
+  }
 }
 
 function ocultarCampoComLabel(el) {

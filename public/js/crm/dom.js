@@ -61,6 +61,7 @@ export function preencherModal(cliente, fields) {
   fields.cidade.value = cliente.cidade;
   fields.maquina.value = cliente.maquina;
   fields.horario.value = cliente.horario;
+  if (fields.consultor) fields.consultor.value = cliente.consultor || '';
   if (fields.status) fields.status.value = cliente.status || 'novo';
 }
 

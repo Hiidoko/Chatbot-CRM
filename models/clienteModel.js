@@ -1,16 +1,26 @@
 const { selecionarConsultor } = require('./consultorModel');
 const { normalizeCliente } = require('../utils/normalizer');
 const { FileClienteRepository } = require('../repositories/clienteRepository');
+let MongoClienteRepository;
+try { ({ MongoClienteRepository } = require('../repositories/clienteRepositoryMongo')); } catch {}
 const { logger } = require('../utils/logger');
 
+const STORAGE = (process.env.CLIENTES_STORAGE || 'file').toLowerCase();
 const dataFile = process.env.CLIENTES_DATA_FILE || 'clientes.json';
-const repo = new FileClienteRepository(dataFile);
+let repo;
+if (STORAGE === 'mongo' && MongoClienteRepository) {
+  repo = new MongoClienteRepository();
+  logger.info({ storage: 'mongo' }, 'Usando MongoClienteRepository para clientes');
+} else {
+  repo = new FileClienteRepository(dataFile);
+  logger.info({ storage: 'file', file: dataFile }, 'Usando FileClienteRepository para clientes');
+}
 
 function gerarId() { return Date.now() + Math.floor(Math.random() * 10000); }
 
 function prepararNovo(c) {
   const norm = normalizeCliente(c);
-  norm.consultor = selecionarConsultor(norm.cidade);
+  norm.consultor = norm.consultor || selecionarConsultor(norm.cidade);
   norm.status = norm.status || 'novo';
   norm.origem = norm.origem || 'manual';
   norm.dataCadastro = new Date().toISOString();
@@ -26,7 +36,7 @@ async function adicionarLote(novos = []) {
   const preparados = novos.map(prepararNovo);
   await repo.addMany(preparados);
   logger.debug({ count: preparados.length }, 'adicionarLote concluído');
-  return true;
+  return preparados; // retorna lista criada para que controller envie IDs ao frontend
 }
 
 async function atualizar(id, dados) {

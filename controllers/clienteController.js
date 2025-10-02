@@ -55,10 +55,27 @@ module.exports = {
     } else {
       return res.status(400).json({ message: 'Formato inválido: esperado objeto ou array.' });
     }
+    // Heurística: se não autenticado OU payload típico de chatbot (sem status, origem, consultor), define origem
+    payloadArray = payloadArray.map(c => {
+      if (!c) return c;
+      const base = { ...c };
+      const isAnon = !req.user;
+      const isChatbotPerfil = isAnon || (!c.origem && !c.status && !c.consultor);
+      if (isChatbotPerfil) base.origem = 'chatbot';
+      else base.origem = base.origem || 'manual';
+      return base;
+    });
     const { erros, validos } = validarLote(payloadArray);
     if (erros.length) return res.status(422).json({ message: 'Erros de validação em um ou mais clientes.', detalhes: erros });
-    await adicionarLote(validos);
-    return res.status(201).json({ message: 'Clientes adicionados com sucesso', total: validos.length });
+    const criados = await adicionarLote(validos);
+    return res.status(201).json({ message: 'Clientes adicionados com sucesso', total: criados.length, data: criados });
+  },
+  async ultimos(req, res) {
+    const { listar } = require('../models/clienteModel');
+    const todos = await listar();
+    const limit = Math.min(50, parseInt(req.query.limit,10) || 10);
+    const ordenados = [...todos].sort((a,b)=> new Date(b.dataCadastro) - new Date(a.dataCadastro));
+    return res.json({ data: ordenados.slice(0, limit), total: todos.length });
   },
   async atualizar(req, res) {
     const id = parseId(req.params.id);

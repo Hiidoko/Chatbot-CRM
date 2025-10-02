@@ -101,10 +101,18 @@ export class ChatbotFlow {
     try {
       const criado = await fetchWithRetry('/api/clientes', {
         method: 'POST',
-        headers: { 'Content-Type':'application/json' },
+        headers: { 'Content-Type':'application/json', 'Accept':'application/json' },
         body: JSON.stringify(payload)
       });
-      const id = Array.isArray(criado?.data) ? criado.data[0]?.id : criado?.id || criado?.data?.id;
+      const clienteCriado = Array.isArray(criado?.data) ? criado.data[0] : (criado?.data || criado);
+      if (window.parent && window.parent !== window && clienteCriado) {
+        try {
+          window.parent.postMessage({ tipo: 'novoCliente', cliente: clienteCriado }, '*');
+        } catch (postErr) {
+          console.warn('[Chatbot] Falha ao notificar CRM sobre novo cliente', postErr);
+        }
+      }
+      const id = clienteCriado?.id ?? criado?.id;
       statusText.textContent = 'Enviado com sucesso!';
       overlay.querySelector('.spinner').style.borderTopColor = '#2e7d32';
   toast(t('toast.leadPersistido') || 'Lead enviado (persistido)', 'success');

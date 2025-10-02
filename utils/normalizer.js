@@ -37,6 +37,8 @@ function normalizeCliente(obj = {}) {
     maquina: normalizeMaquina(obj.maquina),
     horario: normalizeHorario(obj.horario),
     status: trimString((obj.status || '').toLowerCase()),
+    origem: trimString((obj.origem || '').toLowerCase()),
+    consultor: trimString(obj.consultor || ''),
     dataCadastro: obj.dataCadastro
   };
 }

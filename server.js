@@ -10,11 +10,31 @@ const { logger } = require('./utils/logger');
 
 const app = express();
 // Conexão Mongo Atlas / Local
-const MONGO_URL = process.env.MONGO_URL; // Agora obrigatório para apontar p/ Atlas
+const MONGO_URL = process.env.MONGO_URL; // Opcional agora (modo somente leads se ausente)
 const MONGO_DB = process.env.MONGO_DB || 'chatbotcrm';
-if (!MONGO_URL) {
-  logger.error('Variável MONGO_URL não definida. Configure no .env (veja .env.example).');
-  process.exit(1);
+const IS_TEST = process.env.NODE_ENV === 'test';
+const NO_DB_MODE = !MONGO_URL || IS_TEST;
+if (NO_DB_MODE) {
+  logger.warn('MONGO_URL ausente: iniciando em modo LEADS-ONLY (sem autenticação persistente).');
+} else {
+  mongoose.connect(MONGO_URL, { dbName: MONGO_DB }).then(async ()=>{
+    try {
+      if (!process.env.DISABLE_DEFAULT_USER) {
+        const User = require('./models/userModel');
+        const existente = await User.findOne({ email: 'user@email.com' }).lean();
+        if (!existente) {
+          const bcrypt = require('bcryptjs');
+          const senhaHash = await bcrypt.hash('user', 10);
+          await User.create({ nome: 'Usuário Demo', email: 'user@email.com', senhaHash, roles: ['user'] });
+        }
+      }
+    } catch (seedErr) {
+      logger.error({ err: seedErr }, 'Falha ao criar usuário padrão');
+    }
+    try { await mongoose.connection.db.admin().ping(); } catch(e){ logger.debug({ err:e }, 'Ping Mongo falhou (ignorado)'); }
+  }).catch(err => {
+    logger.error({ err }, 'Falha ao conectar MongoDB (verifique string e IP allowlist). Continuando em modo LEADS-ONLY.');
+  });
 }
 
 function maskMongo(url) {
@@ -25,29 +45,7 @@ function maskMongo(url) {
   } catch { return '***'; }
 }
 
-mongoose.connect(MONGO_URL, { dbName: MONGO_DB }).then(async ()=>{
-  // Log de conexão suprimido (intencional para saída limpa)
-  // Seed de usuário padrão (user / user) se não existir
-  try {
-    if (!process.env.DISABLE_DEFAULT_USER) {
-      const User = require('./models/userModel');
-      const existente = await User.findOne({ email: 'user@email.com' }).lean();
-      if (!existente) {
-        const bcrypt = require('bcryptjs');
-        const senhaHash = await bcrypt.hash('user', 10);
-        await User.create({ nome: 'Usuário Demo', email: 'user@email.com', senhaHash, roles: ['user'] });
-  // Log de seed suprimido para manter terminal limpo
-      }
-    }
-  } catch (seedErr) {
-    logger.error({ err: seedErr }, 'Falha ao criar usuário padrão');
-  }
-  // Ping leve para confirmar
-  try { await mongoose.connection.db.admin().ping(); } catch(e){ logger.debug({ err:e }, 'Ping Mongo falhou (ignorado)'); }
-}).catch(err => {
-  logger.error({ err }, 'Falha ao conectar MongoDB (verifique string e IP allowlist)');
-  process.exit(1);
-});
+// (Conexão Mongo movida acima, condicionada a NO_DB_MODE)
 const pkg = require('./package.json');
 
 app.use(requestLogger);
@@ -61,8 +59,31 @@ app.use(authOptional);
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 const clienteRoutes = require("./routes/clienteRoutes");
-// Protege API de clientes (exige login)
-app.use("/api/clientes", requireAuth, clienteRoutes);
+// Rota pública apenas para criação de lead via chatbot (POST)
+const clienteController = require('./controllers/clienteController');
+app.post('/api/clientes', async (req, res) => {
+  logger.info({
+    bodyKeys: Object.keys(req.body||{}),
+    anon: !req.user,
+    hasArray: Array.isArray(req.body),
+    length: Array.isArray(req.body) ? req.body.length : 1,
+    sample: Array.isArray(req.body) ? req.body[0] : req.body
+  }, 'POST público /api/clientes recebido');
+  return clienteController.adicionar(req, res);
+});
+
+// Endpoint de debug (pode ser protegido depois) para inspecionar últimos leads rapidamente
+app.get('/api/clientes/_debug/ultimos', async (req, res) => {
+  return clienteController.ultimos(req, res);
+});
+
+function maybeRequireAuth(req, res, next) {
+  if (NO_DB_MODE) return next();
+  return requireAuth(req, res, next);
+}
+
+// Demais operações protegidas (ou liberadas em modo sem DB)
+app.use("/api/clientes", maybeRequireAuth, clienteRoutes);
 
 app.get('/api/meta/version', (req, res) => {
   res.json({ version: pkg.version });
