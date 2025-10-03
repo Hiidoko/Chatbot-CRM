@@ -12,11 +12,9 @@ describe('Normalizers', () => {
   test('trimString remove múltiplos espaços', () => {
     expect(trimString('  Ola   Mundo  ')).toBe('Ola Mundo');
   });
-  test('normalizeNomeCidade remove caracteres inválidos e normaliza acentos', () => {
-    // A função atual normaliza NFD e remove caracteres não permitidos; acentos são preservados
-    // mas na sequência regex remove caracteres estranhos. Dependendo do ambiente de unicode pode haver remoção.
+  test('normalizeNomeCidade preserva acentos e remove caracteres inválidos', () => {
     const result = normalizeNomeCidade('São@@ Paulo!!');
-    expect(['São Paulo','Sao Paulo']).toContain(result);
+    expect(result).toBe('São Paulo');
   });
   test('normalizeEmail lowercase & trim', () => {
     expect(normalizeEmail('  USER@Mail.Com ')).toBe('user@mail.com');

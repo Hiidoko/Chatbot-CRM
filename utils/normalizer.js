@@ -7,9 +7,10 @@ function trimString(v) {
 }
 
 function normalizeNomeCidade(v) {
-  return trimString(v)
-    .normalize('NFD')
-    .replace(/[^A-Za-zÀ-ÿ'\-\s]/g, '')
+  const base = trimString(v);
+  if (!base) return '';
+  return base
+    .replace(/[^\p{L}\p{M}'\-\s]/gu, '')
     .replace(/\s{2,}/g, ' ');
 }
 

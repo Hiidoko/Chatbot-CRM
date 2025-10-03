@@ -20,7 +20,7 @@ export class ChatbotFlow {
     this.currentQuestion = 0;
     this.leadData = { nome:'', email:'', telefone:'', cidade:'', maquina:'', horario:'' };
     this._bind();
-  loadI18n(localStorage.getItem('crm-lang')).then(()=> botMessage(this.messagesEl, questions[this.currentQuestion].text));
+    loadI18n(localStorage.getItem('crm-lang')).then(() => this._startConversation());
   }
 
   _bind() {
@@ -35,6 +35,15 @@ export class ChatbotFlow {
     userMessage(this.messagesEl, text);
     this.inputEl.value = '';
     this.processAnswer(text);
+  }
+
+  _startConversation() {
+    botMessage(this.messagesEl, 'Olá, sou o Assistente BOT, estou aqui para te ajudar no seu cadastro, vamos começar? 😊');
+    const typing = mostrarDigitando(this.messagesEl);
+    setTimeout(() => {
+      removerDigitando(typing);
+      botMessage(this.messagesEl, questions[this.currentQuestion].text);
+    }, 850);
   }
 
   processAnswer(answer) {
@@ -146,7 +155,7 @@ export class ChatbotFlow {
     this.messagesEl.innerHTML = '';
     this.currentQuestion = 0;
     this.leadData = { nome:'', email:'', telefone:'', cidade:'', maquina:'', horario:'' };
-    botMessage(this.messagesEl, questions[this.currentQuestion].text);
+    this._startConversation();
   }
 
   _setInputError() {

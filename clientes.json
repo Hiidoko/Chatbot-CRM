@@ -1,42 +1,21 @@
 [
   {
-    "nome": "joao",
-    "email": "joao@mail.com",
-    "telefone": "12345678910",
-    "cidade": "maua",
-    "maquina": "Máquina C",
-    "horario": "tanto faz",
-    "status": "novo",
-    "dataCadastro": "2025-10-02T14:23:05.030Z",
-    "consultor": "João",
-    "origem": "manual",
-    "id": 1759414985192,
-    "statusHistorico": [
-      {
-        "status": "novo",
-        "alteradoEm": "2025-10-02T14:23:05.030Z",
-        "origem": "manual",
-        "alteradoPor": null,
-        "observacao": "Cadastro inicial"
-      }
-    ]
-  },
-  {
-    "nome": "Use",
-    "email": "use@mail.com",
-    "telefone": "1123456789",
-    "cidade": "use",
+    "nome": "Caio",
+    "email": "caio@mail.com",
+    "telefone": "1234567890",
+    "cidade": "Sao Paulo",
     "maquina": "Máquina A",
-    "horario": "Use",
+    "horario": "19 Horas",
     "status": "novo",
-    "dataCadastro": "2025-10-02T14:23:44.354Z",
-    "consultor": "Ana",
     "origem": "manual",
-    "id": 1759415030975,
+    "consultor": "Maria",
+    "notas": "",
+    "dataCadastro": "2025-10-03T13:35:07.777Z",
+    "id": 1759498510219,
     "statusHistorico": [
       {
         "status": "novo",
-        "alteradoEm": "2025-10-02T14:23:44.354Z",
+        "alteradoEm": "2025-10-03T13:35:07.777Z",
         "origem": "manual",
         "alteradoPor": null,
         "observacao": "Cadastro inicial"
@@ -44,22 +23,45 @@
     ]
   },
   {
-    "nome": "joao",
+    "nome": "João",
     "email": "joao@mail.com",
-    "telefone": "12345678910",
-    "cidade": "maua",
-    "maquina": "Máquina B",
-    "horario": "tanto faz",
+    "telefone": "11234567890",
+    "cidade": "Sao Paulo",
+    "maquina": "Máquina C",
+    "horario": "20 Hrs",
     "status": "novo",
     "origem": "",
-    "consultor": "João",
-    "dataCadastro": "2025-10-02T18:47:50.537Z",
-    "id": 1759430871161,
+    "consultor": "Maria",
     "notas": "",
+    "dataCadastro": "2025-10-03T13:35:39.506Z",
+    "id": 1759498541977,
     "statusHistorico": [
       {
         "status": "novo",
-        "alteradoEm": "2025-10-02T18:47:50.537Z",
+        "alteradoEm": "2025-10-03T13:35:39.506Z",
+        "origem": "chatbot",
+        "alteradoPor": null,
+        "observacao": "Cadastro inicial"
+      }
+    ]
+  },
+  {
+    "nome": "Marcos",
+    "email": "email@email.com",
+    "telefone": "10123456789",
+    "cidade": "Bahia",
+    "maquina": "Máquina C",
+    "horario": "Disponibilidade Total",
+    "status": "contatado",
+    "origem": "manual",
+    "consultor": "Maria",
+    "notas": "",
+    "dataCadastro": "2025-10-03T13:36:36.866Z",
+    "id": 1759498598377,
+    "statusHistorico": [
+      {
+        "status": "contatado",
+        "alteradoEm": "2025-10-03T13:36:36.866Z",
         "origem": "manual",
         "alteradoPor": null,
         "observacao": "Cadastro inicial"

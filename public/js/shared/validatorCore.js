@@ -3,7 +3,7 @@ import { clienteSchema as clienteSchemaRaw } from './cliente-schema.js';
 
 // Normalizadores replicados (mantidos simples e alinhados ao backend)
 function trimString(v){ return typeof v === 'string' ? v.replace(/\s+/g,' ').trim() : ''; }
-function normalizeNomeCidade(v){ return trimString(v).normalize('NFD').replace(/[^A-Za-zÀ-ÿ'\-\s]/g,'').replace(/\s{2,}/g,' '); }
+function normalizeNomeCidade(v){ const base = trimString(v); if(!base) return ''; return base.replace(/[^\p{L}\p{M}'\-\s]/gu,'').replace(/\s{2,}/g,' '); }
 function normalizeEmail(v){ return trimString(v).toLowerCase(); }
 function normalizeTelefone(v){ return String(v||'').replace(/\D/g,''); }
 function normalizeMaquina(v){ return trimString(v).replace(/[^A-Za-z0-9À-ÿ\- _]/g,'').slice(0,80); }
