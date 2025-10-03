@@ -4,7 +4,7 @@ Aplicação full stack JavaScript que combina um mini CRM de leads com um widget
 
 ## 🌐 Visão Geral
 
-O sistema permite captar, listar, filtrar, editar e analisar leads com uma interface leve (SPA sem frameworks pesados) e um fluxo de entrada via chatbot (iframe). Consultores são atribuídos automaticamente conforme a especialidade (máquina) informada pelo lead.
+O sistema permite captar, listar, filtrar, editar e analisar leads com uma interface leve (SPA sem frameworks pesados) estilizada com Tailwind CSS e um fluxo de entrada via chatbot (iframe). Consultores são atribuídos automaticamente conforme a especialidade (máquina) informada pelo lead.
 
 
 ## ✨ Principais Recursos
@@ -20,6 +20,7 @@ O sistema permite captar, listar, filtrar, editar e analisar leads com uma inter
 - Histórico de status por cliente com linha do tempo e exportação para Excel (CSV)
 - Acessibilidade: navegação por teclado, ARIA relevante, feedback visual moderado
 - Feedback de UI: toasts, diálogos de confirmação customizados, animações respeitando preferência do usuário
+- UI responsiva construída com Tailwind CSS (design glassmorphism, breakpoints mobile-first)
 - Estrutura modular (camadas de validação, normalização e lógica reutilizáveis)
 
 ## 🧩 Arquitetura
@@ -29,6 +30,15 @@ O sistema permite captar, listar, filtrar, editar e analisar leads com uma inter
 | Backend (Express 5) | Servidor HTTP simples que expõe a API `/api/clientes` e serve assets estáticos em `public/`. |
 | Modelos / Lógica | Implementados em `models/` e classe CRM no frontend (`public/js/crm/logic.js`). |
 | Validação | Regras centralizadas em `validators/clienteValidator.js`, reutilizadas no front. |
+| Estilização (Tailwind CSS) | Fonte única em `src/tailwind.css` com tokens customizados, compilada para `public/styles/app.css` via `npm run build:css`. |
+
+### 🎨 UI & Tailwind
+
+- Design system único definido em CSS (tokens, gradientes, sombras) e gerenciado com Tailwind via camada `@layer`.
+- Breakpoints mobile-first ajustando sidebar, chatbot e página "Sobre" para telas pequenas.
+- Script `npm run build:css` recompila o bundle minificado com base em `tailwind.config.cjs`.
+- Watch automático ao rodar `npm start` (executa `prestart` com build de schemas + CSS).
+
 ### 🔐 Validação Unificada (Backend + Frontend)
 ### 💾 Persistência Abstrata (ClienteRepository)
 
@@ -116,6 +126,8 @@ npm install
 npm start
 ```
 Acesse: http://localhost:3000
+
+> O script `npm start` roda `prestart`, que recompila schemas e Tailwind (`npm run build:schemas && npm run build:css`). Para builds manuais você pode executar `npm run build:css` quando ajustar `src/tailwind.css`.
 
 ## 🔗 Endpoints Principais
 
