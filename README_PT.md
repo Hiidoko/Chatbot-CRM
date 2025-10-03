@@ -1,6 +1,8 @@
 # CRM + Chatbot
 
-Aplicação full stack JavaScript que apresenta um mini CRM moderno conectado a um chatbot. O foco é demonstrar UX refinada, acessibilidade desde o dia zero e boas práticas de engenharia (validações unificadas, testes automatizados, arquitetura modular).
+Este README está em português. [Read in English](README_EN.md) 🇺🇸
+
+Aplicação full stack JavaScript que apresenta um mini CRM moderno conectado a um chatbot com cara de WhatsApp. O foco é demonstrar UX refinada, acessibilidade desde o dia zero e boas práticas de engenharia (validações unificadas, testes automatizados, arquitetura modular).
 
 > Projeto educacional/portfólio: os dados são fictícios e **não devem ser usados em produção** sem endurecer segurança, persistência e monitoramento.
 
@@ -239,7 +241,7 @@ Projeto educativo. Não armazene dados sensíveis. Adicione autenticação, rate
 Distribuído sob a licença **MIT**. Consulte o arquivo `LICENSE` para detalhes.
 
 ## 🙌 Créditos
-Criado por **Caio Marques (Hiidoko)**  \
+Criado por **Caio Marques (Hiidoko)**  \\
 [LinkedIn](https://linkedin.com/in/hiidoko)
 
 Se o projeto te ajudou, deixe uma ⭐. Aberto a feedbacks e oportunidades — vamos conversar sobre este trabalho ou possíveis vagas pelo LinkedIn.
