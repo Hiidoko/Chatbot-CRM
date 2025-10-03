@@ -1,176 +1,119 @@
 # CRM + Chatbot
 
-Aplicação full stack JavaScript que simula um mini CRM moderno integrado a um chatbot estilo WhatsApp. Construída com foco em UX, acessibilidade e boas práticas de código (validações unificadas, testes automatizados, arquitetura modular).
+Aplicação full stack JavaScript que apresenta um mini CRM moderno conectado a um chatbot. O foco é demonstrar UX refinada, acessibilidade desde o dia zero e boas práticas de engenharia (validações unificadas, testes automatizados, arquitetura modular).
 
-> Projeto educacional/portfólio – não utiliza dados reais e **não deve ser usado em produção** sem fortalecer segurança, persistência e observabilidade.
+> Projeto educacional/portfólio: os dados são fictícios e **não devem ser usados em produção** sem endurecer segurança, persistência e monitoramento.
 
 ## 🔗 Demo & Preview
-- Demo online: [chatbot-crm-peuq.onrender.com](https://chatbot-crm-peuq.onrender.com)
-- Screenshot:
+- **Live demo:** [chatbot-crm-peuq.onrender.com](https://chatbot-crm-peuq.onrender.com)
+- **Screenshot:**
 
   ![Interface do CRM + Chatbot](./public/img/print.png)
 
 ## 🚀 Tech Stack
-- **Frontend:** ES Modules + Tailwind CSS
-- **Backend:** Node.js + Express
-- **Testes:** Jest + Supertest
-- **Logs:** Pino & pino-http
-- **CI/CD:** GitHub Actions (lint, testes, build)
+- **Frontend:** ES Modules puros + Tailwind CSS
+- **Backend:** Node.js 18 + Express 5
+- **Testes:** Jest, Supertest e snapshots
+- **Logs & observabilidade:** Pino + pino-http
+- **CI/CD:** GitHub Actions (lint, testes, build de schemas/CSS)
 
 ## 🌐 Visão Geral
 
-O sistema permite captar, listar, filtrar, editar e analisar leads com uma interface leve (SPA sem frameworks pesados) estilizada com Tailwind CSS e um fluxo de entrada via chatbot (iframe). Consultores são atribuídos automaticamente conforme a especialidade (máquina) informada pelo lead.
-
+O CRM possibilita captar, organizar e acompanhar leads com uma SPA leve (sem frameworks pesados) estilizada em Tailwind. O chatbot embarcado capta os dados do lead, envia para o shell principal via `postMessage`, e o CRM faz todo o trabalho de normalização, validação e atribuição automática de consultor.
 
 ## ✨ Principais Recursos
 
-- Cadastro e edição de clientes (modal ou edição inline)
-- Atribuição automática de consultor por especialidade da máquina
-- Filtros rápidos + Painel de **Filtros Avançados** com seleção por Cidade, Máquina, Consultor e Status
-- Paginação configurável (25 / 50 / 100 / Todos) e ordenação por múltiplos critérios
-- Busca unificada por nome/e-mail + ordenações (data, nome, status, consultor)
-- Painéis analíticos dinâmicos (status, consultor, máquina) refletindo os filtros ativos
-- Painel de clientes por consultor na aba Consultores (carregado sob demanda)
-- Chatbot integrado que envia novos leads para o CRM via `postMessage`
-- Histórico de status por cliente com linha do tempo e exportação para Excel (CSV)
-- Acessibilidade: navegação por teclado, ARIA relevante, feedback visual moderado
-- Feedback de UI: toasts, diálogos de confirmação customizados, animações respeitando preferência do usuário
-- UI responsiva construída com Tailwind CSS (design glassmorphism, breakpoints mobile-first)
-- Estrutura modular (camadas de validação, normalização e lógica reutilizáveis)
+- Cadastro de clientes com modais e editor inline, preservando contexto
+- Filtros avançados por Cidade, Máquina, Consultor e Status com estado persistido
+- Paginação configurável (25/50/100/Todos) e ordenação múltipla por coluna
+- Busca unificada por nome/e-mail e métricas dinâmicas por status, consultor e máquina
+- Aba Consultores com painel assíncrono de clientes por especialista
+- Chatbot responsivo que encaminha leads automaticamente para o CRM
+- Linha do tempo de status + exportação de clientes em CSV
+- Acessibilidade desde o markup: navegação via teclado, ARIA consistente, feedback visual contido
+- Layout responsivo mobile-first com glassmorphism e painel lateral recolhível
+- Camadas reutilizáveis de validação, normalização e logging
 
 ## 🧩 Arquitetura
 
-| Camada | Descrição |
-| ------ | --------- |
-| Backend (Express 5) | Servidor HTTP simples que expõe a API `/api/clientes` e serve assets estáticos em `public/`. |
-| Modelos / Lógica | Implementados em `models/` e classe CRM no frontend (`public/js/crm/logic.js`). |
-| Validação | Regras centralizadas em `validators/clienteValidator.js`, reutilizadas no front. |
-| Estilização (Tailwind CSS) | Fonte única em `src/tailwind.css` com tokens customizados, compilada para `public/styles/app.css` via `npm run build:css`. |
+| Camada | Como funciona |
+| ------ | ------------- |
+| Backend (Express 5) | API REST em `/api/*`, estáticos servidos a partir de `public/`, middlewares de log/erro centralizados. |
+| Modelos / Lógica | Regras de domínio e orquestração em `models/` e `public/js/crm/logic.js`, isolando persistência e apresentação. |
+| Validação | Schema único (`validators/schema/clienteSchema.js`) compartilhado por backend e frontend. |
+| Estilização | Tailwind customizado em `src/tailwind.css`, tokens de design e variáveis globais compiladas para `public/styles/app.css`. |
 
 ### 🎨 UI & Tailwind
 
-- Design system único definido em CSS (tokens, gradientes, sombras) e gerenciado com Tailwind via camada `@layer`.
-- Breakpoints mobile-first ajustando sidebar, chatbot e página "Sobre" para telas pequenas.
-- Script `npm run build:css` recompila o bundle minificado com base em `tailwind.config.cjs`.
-- Watch automático ao rodar `npm start` (executa `prestart` com build de schemas + CSS).
+- Design system próprio com variáveis CSS, gradientes e sombras encapsulados em camadas Tailwind.
+- Breakpoints mobile-first: sidebar comprimida, chatbot em tela cheia e páginas específicas (como "Sobre") adaptadas para displays menores.
+- `npm run build:css` gera o bundle minificado; `npm start` executa `prestart` (build de schemas + CSS) antes de subir o servidor.
+- Estilos de selects, modais e cartões afinados para contrastes adequados e acessibilidade.
 
 ### 🔐 Validação Unificada (Backend + Frontend)
+- Schema declarativo descreve campos, tipos, padrões e mensagens.
+- Script `npm run build:schemas` exporta versões JSON e ES Module para consumo no front.
+- `validatorCore` aplica os mesmos normalizadores (nome, telefone, e-mail) que o backend, evitando divergência.
+- Inclusão de novos campos envolve atualizar o schema, disparar o build e consumir no front/backend sem repetir regras.
+
 ### 💾 Persistência Abstrata (ClienteRepository)
-
-Agora a camada de dados de clientes utiliza um repositório (`FileClienteRepository`) que implementa uma interface simples (getAll, addMany, update, delete). O armazenamento continua em arquivo JSON, porém:
-
-- Operações assíncronas (`fs/promises`)
-- Escrita atômica (arquivo temporário + rename) para reduzir risco de corrupção
-- Lock serializado (fila de Promises) para evitar race conditions em múltiplos writes
-- Fácil migração futura: criar outro repositório (ex: `SqliteClienteRepository`) mantendo a mesma assinatura e substituir no `clienteModel`.
-
-Para migrar para outro backend de dados basta:
-1. Criar nova classe com mesmos métodos.
-2. Ajustar a instância no `models/clienteModel.js`.
-3. (Opcional) Adicionar pooling/conexão e tratar erros específicos.
+- `FileClienteRepository` mantém os dados em JSON com operações assíncronas, escrita atômica e fila de writes para evitar corrida.
+- Mudar de armazenamento exige apenas implementar outro repositório (ex.: Mongo, PostgreSQL, SQLite) com a mesma assinatura e trocar a instância em `clienteModel`.
 
 ### 📊 Observabilidade & Logs
+- Logging estruturado com `pino` + `pino-http`, nivelado via `LOG_LEVEL`.
+- `errorHandler` central padroniza payloads de erro; stack trace só aparece em dev/test.
+- Suporte a `pino-pretty` quando fora de produção para leitura mais amigável.
 
-Logging estruturado com `pino` + middleware de requisição (`pino-http`):
+As regras de validação residem em um único schema (`clienteSchema`). Enquanto o backend usa `validateWithSchema`, o frontend consome a versão gerada para garantir mensagens coerentes e normalização alinhada. O guardião para novos campos é simples: editar o schema, rodar o build e utilizar o campo em ambas as camadas.
 
-- Middleware registra método, URL e status code.
-- `errorHandler` central aplica formato consistente `{ message, code, trace? }` (stack só em dev/test).
-- Nível configurável via `LOG_LEVEL` (default: debug em dev, info em produção).
-- Pretty print automático se `NODE_ENV !== production` e `pino-pretty` estiver instalado.
-- Logs de domínio (ex: operações de cliente) usam `logger.debug/info/warn/error`.
-
-Exemplo de erro em desenvolvimento:
-```json
-{
-  "message": "Campo 'email' é obrigatório.
-  ","code": "error",
-  "trace": "Error: Campo 'email' é obrigatório.\n    at ..."
-}
-```
-
-Em produção a propriedade `trace` é omitida.
-
-
-As regras de validação de cliente agora são definidas **uma única vez** em um schema declarativo (`validators/schema/clienteSchema.js`).
-
-Pipeline:
-1. O backend utiliza `validateWithSchema` para validar e normalizar.
-2. Um script de build (`npm run build:schemas`) gera:
-  - `public/validation/cliente-schema.json` (JSON consumível ou inspeção)
-  - `public/js/shared/cliente-schema.js` (ES Module com o schema embutido)
-3. O frontend importa `public/js/shared/validatorCore.js`, que replica normalização essencial e aplica as mesmas regras, evitando divergência.
-
-Benefícios:
-- Zero drift entre mensagens / regex / campos obrigatórios.
-- Facilita evolução (adicionar campo = editar schema e rebuild).
-- Reduz duplicação e risco de bypass na API.
-
-Para adicionar um novo campo:
-1. Edite `validators/schema/clienteSchema.js` (definindo `type`, `minLength`, `pattern`, etc.).
-2. (Opcional) Adicione normalizador reutilizando helpers em `utils/normalizer.js`.
-3. Rode `npm run build:schemas` (ou apenas `npm start` que executa `prestart`).
-4. Use o campo normalmente no frontend e backend.
-
-| Frontend SPA | ES Modules (sem React/Vue/Angular) com carregamento de "partials" via `viewLoader.js`. |
-| Chatbot | Iframe separado (`public/html/chatbot.html`) enviando dados para o shell principal. |
+| Frontend SPA | ES Modules que carregam "partials" via `viewLoader.js`, mantendo shell estável. |
+| Chatbot | Rodando em iframe (`public/html/chatbot.html`), conversa baseada em fluxo guiado e integração por `postMessage`. |
 
 ## 🗂 Estrutura de Pastas (resumida)
 
 ```
 public/
-  html/ (vistas parciais: clientes, consultores, sobre, chatbot)
+  html/         # views clientes, consultores, sobre, chatbot
   js/
-    crm/ (lógica principal CRM, renderizações, validações, consultores)
-    chatbot/ (fluxo do chatbot, DOM e validação de entrada)
-  styles/ (CSS modular: base, sobre, shell do chatbot)
-models/ (modelos e acesso a dados em memória)
-controllers/ (controladores Express)
-routes/ (rotas Express)
-validators/ (validações de entrada)
-utils/ (normalizadores ou helpers)
+    crm/        # lógica principal do CRM, renderização, filtros
+    chatbot/    # fluxo de perguntas, DOM e validação do widget
+  styles/       # CSS compilado (app.css) e temas
+models/         # modelos e camada de repositório
+controllers/    # controladores Express
+routes/         # rotas HTTP
+validators/     # esquema e validadores reutilizáveis
+utils/          # normalizadores, logger, helpers
 ```
 
-> Persistência atual é **em memória** (volátil). Reiniciar o servidor perde os dados. Para evoluir: integrar banco (PostgreSQL, MongoDB ou SQLite) e camada de repositório.
+> Persistência atual é **em memória (arquivo JSON)**. Reiniciar o servidor limpa os dados. Evoluir para banco real envolve criar um novo repositório e plugar no modelo.
 
 ## 🚀 Como Executar Localmente
 
-Pré-requisitos: [Node.js 18+](https://nodejs.org/) instalado.
+Pré-requisitos: [Node.js 18+](https://nodejs.org/)
 
 ```bash
 npm install
 npm start
 ```
-Acesse: http://localhost:3000
 
-> O script `npm start` roda `prestart`, que recompila schemas e Tailwind (`npm run build:schemas && npm run build:css`). Para builds manuais você pode executar `npm run build:css` quando ajustar `src/tailwind.css`.
+A aplicação sobe em `http://localhost:3000`. O `npm start` executa `npm run build:schemas && npm run build:css` antes de iniciar o servidor, garantindo que Tailwind e schema estejam atualizados. Para rebuild manual do CSS use `npm run build:css` sempre que alterar `src/tailwind.css`.
 
 ## 🔗 Endpoints Principais
 
 | Método | Rota | Descrição |
 | ------ | ---- | --------- |
-| GET | `/api/clientes?pagina=1&pageSize=25&sort=nome:asc&status=novo` | Lista paginada + filtros + ordenação |
-| HEAD | `/api/clientes` | Retorna cabeçalho `X-Total-Count` |
-| OPTIONS | `/api/clientes` | Métodos permitidos |
-| GET | `/api/clientes/:id` | Obtém cliente por ID |
-| POST | `/api/clientes` | Cria cliente(s) (objeto único ou array) |
-| PUT | `/api/clientes/:id` | Atualização completa (compat) |
+| GET | `/api/clientes?pagina=1&pageSize=25&sort=nome:asc&status=novo` | Lista paginada com filtros e ordenação |
+| HEAD | `/api/clientes` | Retorna `X-Total-Count` para paginação |
+| OPTIONS | `/api/clientes` | Informa métodos permitidos |
+| GET | `/api/clientes/:id` | Recupera cliente por ID |
+| POST | `/api/clientes` | Cria um ou vários clientes |
+| PUT | `/api/clientes/:id` | Atualização completa |
 | PATCH | `/api/clientes/:id` | Atualização parcial |
 | DELETE | `/api/clientes/:id` | Remove cliente |
-| GET | `/api/meta/version` | Retorna versão do pacote |
+| GET | `/api/meta/version` | Devolve versão atual da aplicação |
 
-Payload básico (POST / PUT):
-Resposta paginada (GET /api/clientes):
-```json
-{
-  "data": [ { "id": 123, "nome": "..." } ],
-  "page": 1,
-  "pageSize": 25,
-  "total": 120,
-  "totalPages": 5,
-  "sort": "dataCadastro:desc",
-  "filters": { "status": "novo", "cidade": null, "maquina": null, "consultor": null, "texto": null }
-}
-```
+Payload de criação/edição:
 
 ```json
 {
@@ -180,113 +123,123 @@ Resposta paginada (GET /api/clientes):
   "cidade": "São Paulo",
   "maquina": "Máquina A",
   "horario": "Manhã",
-  "status": "novo" | "em andamento" | "contatado" | "convertido" | "perdido",
-  "consultor": "(opcional – atribuído se houver especialidade correspondente)"
+  "status": "novo",
+  "consultor": "(opcional)"
+}
+```
+
+Resposta paginada típica:
+
+```json
+{
+  "data": [{ "id": 123, "nome": "..." }],
+  "page": 1,
+  "pageSize": 25,
+  "total": 120,
+  "totalPages": 5,
+  "sort": "dataCadastro:desc",
+  "filters": {
+    "status": "novo",
+    "cidade": null,
+    "maquina": null,
+    "consultor": null,
+    "texto": null
+  }
 }
 ```
 
 ## 🤖 Integração do Chatbot
-- O chatbot envia mensagens ao CRM usando `window.parent.postMessage({ tipo: 'novoCliente', cliente })`.
-- O CRM valida, normaliza e aplica: status padrão + atribuição automática de consultor.
-- O card recém-criado é destacado com animação.
+- Fluxo guiado coleta nome, email, telefone, cidade, máquina e melhor horário.
+- Cada resposta passa pelos validadores compartilhados; a etapa da máquina mostra cards selecionáveis.
+- Ao final, os dados são enviados via API; se estiver embutido no CRM, um `postMessage` sincroniza o novo lead com o shell imediatamente.
+- Em caso de falha de rede, há fallback para `postMessage` e feedback por toasts.
 
 ## 🧠 Atribuição Automática de Consultor
-1. Lead chega com campo `maquina` (ex: "Máquina A").
-2. Filtra consultores com especialidade equivalente.
-3. Escolhe um aleatoriamente entre os disponíveis.
-4. Salva consultor no cliente (ou deixa sem se não houver match).
+1. O lead seleciona uma máquina de interesse.
+2. Repositório de consultores é filtrado por especialidade compatível.
+3. Um consultor é escolhido randômicamente dentre os elegíveis.
+4. Se ninguém for compatível, o lead permanece sem consultor associado (para handling manual).
 
 ## ♿ Acessibilidade e UX
-Implementado um primeiro pass de melhorias visando navegação assistiva, foco previsível e semântica limpa.
+Primeiro ciclo de melhorias priorizou comportamento previsível para leitores de tela e navegação por teclado.
 
 ### Principais Decisões
-- Lista de clientes convertida de múltiplos `<div>` para estrutura semântica `<ul role="list">` + `<li>`.
-- Cada item de cliente atua como disclosure simplificado (expansível) com `role="button"`, `aria-expanded` e `aria-pressed` sincronizados.
-- Contador dinâmico de clientes (`#totalClients`) marcado como `role="status"` + `aria-live="polite` (anuncia mudanças sem interromper leitura em leitores de tela).
-- Painel de Filtros Avançados e cabeçalho recolhível expõem estado com `aria-expanded` + `aria-pressed` (reforçando affordance para botões toggle).
-- Modal de edição recebe `role="dialog"`, `aria-modal="true"`, rótulo acessível e trap de foco (Tab/Shift+Tab ciclando dentro; restauração de foco ao fechar). Escape fecha modal.
-- Atributos de ocultação (`aria-hidden`) aplicados dinamicamente a painéis analíticos quando header/filtros são colapsados.
+- Lista de clientes renderizada como `<ul role="list">` + `<li>` expansíveis com `role="button"`.
+- Painel de filtros e cabeçalho possuem `aria-expanded`/`aria-pressed` sincronizados.
+- Contadores dinâmicos usam `role="status"` + `aria-live="polite"` para feedback não intrusivo.
+- Modal de edição tem `role="dialog"`, `aria-modal="true"`, trap de foco e fechamento por Esc.
+- Painéis analíticos ocultos recebem `aria-hidden` para minimizar ruído.
 
 ### Interações de Teclado
 | Componente | Teclas | Resultado |
 | ---------- | ------ | --------- |
-| Card de cliente | Enter / Espaço | Expande/colapsa (atualiza `aria-expanded` e `aria-pressed`) |
-| Modal | Esc | Fecha e restaura foco anterior |
-| Toggle Filtros Avançados | Enter / Clique | Mostra/oculta painel, atualiza estado ARIA |
-| Header de filtros | Enter / Espaço / Ctrl+Shift+F | Colapsa/expande cabeçalho e oculta painéis analíticos |
+| Card de cliente | Enter / Espaço | Expande ou colapsa o card atualizando ARIA |
+| Modal | Esc | Fecha e devolve foco para o acionador |
+| Toggle Filtros Avançados | Enter / Clique | Exibe/esconde painel mantendo estado narrado |
+| Header de filtros | Enter / Espaço / Ctrl+Shift+F | Alterna compactação do cabeçalho e painéis |
 
 ### ARIA / Semântica Utilizada
 | Recurso | Uso |
 | ------- | --- |
-| `role="list"` | Declara a lista de clientes para leitores em vez de apenas `div`s |
-| `role="button"` em `<li>` | Clarifica interatividade dos itens expandíveis |
-| `aria-expanded` | Estado de expansão do item de cliente e toggles de UI |
-| `aria-pressed` | Estado de botões toggle (header, filtros avançados, item expandido) |
-| `role="status"` + `aria-live="polite"` | Atualizações não intrusivas de total/paginação |
-| `role="dialog"` + `aria-modal` | Modal de edição com foco gerenciado |
-| `aria-hidden` dinâmico | Reduz ruído em painéis quando colapsados |
+| `role="list"` | Estrutura semântica da listagem principal |
+| `role="button"` em `<li>` | Indica que o item é acionável/expandível |
+| `aria-expanded` | Estado de expansão dos cards e painéis |
+| `aria-pressed` | Estado dos toggles (filtros, cards) |
+| `role="status"` + `aria-live="polite"` | Atualizações sutis de contadores |
+| `role="dialog"` + `aria-modal` | Modal acessível com foco controlado |
+| `aria-hidden` dinâmico | Evita leitura de conteúdo oculto |
 
 ### Foco & Gestão de Ciclo
-- Ao abrir modal, foco inicial no campo "nome" com atraso leve pós-animação.
-- Trap de foco implementado interceptando Tab/Shift+Tab.
-- Fechamento devolve foco ao elemento que disparou a ação (persistido em variável). 
+- Modal abre com foco no campo "Nome" após a animação.
+- Trap de foco impede fuga usando Tab/Shift+Tab.
+- Ao fechar, o foco retorna para o elemento que acionou o modal.
 
 ### Possíveis Evoluções Futuras
-- Validar fluxos críticos com leitores de tela (NVDA/VoiceOver) e ajustar descrições contextuais.
-- Introduzir modo de alto contraste alternável dentro da aplicação.
-- Oferecer preferências personalizadas de animação e feedback tátil/auditivo.
-- Criar tour guiado acessível que destaque o painel de filtros avançados.
-- Automatizar auditorias de acessibilidade via axe-core/pa11y nas pipelines CI.
+- Realizar rodadas de testes com NVDA/VoiceOver e ajustar descrições contextuais.
+- Disponibilizar modo de alto contraste e preferências de animação.
+- Acrescentar tour guiado acessível que destaque filtros e painéis.
+- Automatizar auditorias com axe-core/pa11y em pipelines.
 
-> Objetivo: manter a interface escalável sem depender de frameworks, garantindo baseline robusto para leitores de tela e navegação somente por teclado.
+> Objetivo: manter a interface escalável sem frameworks pesados e acessível para quem navega só via teclado ou leitor de tela.
 
 ## 🔄 Evoluções Futuras (Sugestões)
-- Integração com provedores externos (e-mail marketing, help desk) via webhooks.
-- Painel de relatórios agendáveis com exportação em PDF e compartilhamento seguro.
-- Notificações push/web para leads de alta prioridade.
-- Painel de automações com regras if-this-then-that e histórico de execuções.
-- Empacotamento oficial com Docker Compose e documentação de deploy em nuvem.
+- Integração com provedores externos (marketing, help desk) via webhooks.
+- Relatórios agendáveis com exportação em PDF e compartilhamento seguro.
+- Notificações push/web para leads quentes.
+- Motor de automações tipo "if-this-then-that" com histórico.
+- Empacotamento oficial (Docker Compose) + guia de deploy cloud.
+
 ## 🧪 Testes & Qualidade
 
-Infra adicionada:
+- Jest cobre unidade e integração (`tests/*.test.js`).
+- Supertest valida rotas HTTP.
+- ESLint + Prettier garantem padronização.
+- GitHub Actions roda lint, testes e build em Node 18/20.
 
-- Jest para testes unitários e de integração
-- Supertest para rotas HTTP
-- ESLint (regras recomendadas + import + integração com Prettier)
-- Prettier padronizando formatação
-- GitHub Actions executando lint + testes em Node 18 e 20
+Scripts úteis:
 
-Scripts:
 ```
-npm test        # roda testes
-npm run lint    # analisa qualidade de código
-npm run format  # checa formatação
-npm run format:fix # aplica formatação
+npm test        # executa a suíte completa
+npm run lint    # análise estática
+npm run format  # checagem de formatação
+npm run format:fix # corrige formatação automaticamente
 ```
 
-Áreas cobertas:
-- Normalizers (utils/normalizer)
-- Validador unificado de cliente (schema) com snapshot de erro
-- Seleção de consultor
-- Integração /api/clientes (CRUD básico + paginação)
-
-Para adicionar um novo teste, crie um arquivo em `tests/*.test.js`.
+Áreas cobertas atualmente: normalizadores, validador unificado, seleção de consultor, integração `/api/clientes` (CRUD + paginação).
 
 ### Backlog Técnico
-- Aumentar cobertura de testes end-to-end com Playwright focando no fluxo do chatbot.
-- Adicionar testes de performance (Lighthouse) à pipeline CI.
-- Monitorar métricas de uso com coleta opcional (Matomo/PostHog) preservando privacidade.
+- Expandir cobertura end-to-end com Playwright (fluxo chatbot → CRM).
+- Adicionar testes de performance (Lighthouse/WebPageTest) na CI.
+- Instrumentar métricas de uso opt-in (Matomo/PostHog) sem rastrear dados sensíveis.
 
 ## ⚠️ Aviso
-Projeto educativo. Não armazene dados sensíveis. Adapte segurança, rate limiting, logs estruturados e auditoria antes de qualquer uso externo.
+Projeto educativo. Não armazene dados sensíveis. Adicione autenticação, rate limiting, logs de auditoria e infraestrutura robusta antes de qualquer uso real.
 
 ## 📄 Licença
 Distribuído sob a licença **MIT**. Consulte o arquivo `LICENSE` para detalhes.
 
 ## 🙌 Créditos
-Criado por: **Caio Marques (Hiidoko)**  
-LinkedIn: https://linkedin.com/in/hiidoko  
+Criado por **Caio Marques (Hiidoko)**  \
+[LinkedIn](https://linkedin.com/in/hiidoko)
 
-Se este projeto for útil para estudo, marque a estrela no repositório! ⭐
-
-Aberto a feedbacks e oportunidades. Vamos conversar sobre este projeto ou possíveis vagas? Me chame no [LinkedIn](https://linkedin.com/in/hiidoko).
+Se o projeto te ajudou, deixe uma ⭐. Aberto a feedbacks e oportunidades — vamos conversar sobre este trabalho ou possíveis vagas pelo LinkedIn.
