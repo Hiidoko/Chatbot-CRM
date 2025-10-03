@@ -1,6 +1,21 @@
 # CRM + Chatbot
 
-Aplicação full stack JavaScript que combina um mini CRM de leads com um widget de Chatbot integrado. Construída para fins educacionais e de portfólio – não utiliza dados reais e **não deve ser usada em produção** sem revisão de segurança, persistência adequada e testes automatizados adicionais.
+Aplicação full stack JavaScript que simula um mini CRM moderno integrado a um chatbot estilo WhatsApp. Construída com foco em UX, acessibilidade e boas práticas de código (validações unificadas, testes automatizados, arquitetura modular).
+
+> Projeto educacional/portfólio – não utiliza dados reais e **não deve ser usado em produção** sem fortalecer segurança, persistência e observabilidade.
+
+## 🔗 Demo & Preview
+- Demo online: [chatbot-crm-peuq.onrender.com](https://chatbot-crm-peuq.onrender.com)
+- Screenshot:
+
+  ![Interface do CRM + Chatbot](./public/img/print.png)
+
+## 🚀 Tech Stack
+- **Frontend:** ES Modules + Tailwind CSS
+- **Backend:** Node.js + Express
+- **Testes:** Jest + Supertest
+- **Logs:** Pino & pino-http
+- **CI/CD:** GitHub Actions (lint, testes, build)
 
 ## 🌐 Visão Geral
 
@@ -273,3 +288,5 @@ Criado por: **Caio Marques (Hiidoko)**
 LinkedIn: https://linkedin.com/in/hiidoko  
 
 Se este projeto for útil para estudo, marque a estrela no repositório! ⭐
+
+Aberto a feedbacks e oportunidades. Vamos conversar sobre este projeto ou possíveis vagas? Me chame no [LinkedIn](https://linkedin.com/in/hiidoko).
