@@ -610,6 +610,383 @@
     }
   }
 
+  @media (max-width: 1024px) {
+    .crm-layout {
+      @apply gap-6 px-6 py-6;
+    }
+
+    .crm-sidebar {
+      width: 220px;
+      @apply rounded-[22px];
+    }
+
+    .crm-main {
+      @apply rounded-[22px];
+    }
+
+    .crm-header-top {
+      @apply px-6 py-5;
+    }
+
+    .crm-header-top h1 {
+      @apply text-[1.85rem];
+    }
+
+    .crm-header {
+      @apply mt-5 mx-6 flex-col gap-3;
+    }
+
+    #searchInput,
+    .crm-header select,
+    #sortBy,
+    #pageSize {
+      @apply w-full;
+      min-width: 0;
+    }
+
+    .filter-button {
+      @apply justify-center;
+    }
+
+    .advanced-filters {
+      @apply mx-6;
+    }
+
+    .adv-body {
+      grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    }
+
+    #analytics-panels {
+      @apply gap-4 px-6 pt-1 pb-3;
+    }
+
+    .chart-area {
+      @apply gap-8;
+    }
+
+    .chart-canvas-wrapper {
+      max-width: none;
+    }
+
+    .clientes-list,
+    .consultores-list {
+      @apply mx-6;
+    }
+
+    .cliente-card,
+    .consultor-card {
+      @apply flex-col gap-4 px-5 py-5;
+    }
+  }
+
+  @media (max-width: 768px) {
+    body {
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    body.sidebar-expanded {
+      overflow: hidden;
+    }
+
+    #app,
+    #view-root {
+      @apply overflow-visible;
+      min-height: 100%;
+    }
+
+    .crm-layout {
+      @apply flex-col gap-4;
+      padding: 4.5rem clamp(1rem, 6.5vw, 2rem) 1.45rem clamp(1.9rem, 9vw, 2.9rem);
+      min-height: 100vh;
+      height: auto;
+    }
+
+    .crm-main {
+      @apply rounded-[20px];
+      min-height: calc(100vh - 5rem);
+      margin-left: clamp(0.7rem, 4.2vw, 1.4rem);
+      margin-right: clamp(0.6rem, 3.6vw, 1.2rem);
+    }
+
+    .crm-header-top {
+      @apply static flex-col items-start gap-3 rounded-[20px] px-5 py-4;
+    }
+
+    .crm-header-top h1 {
+      @apply text-[1.6rem];
+      letter-spacing: 0.14em;
+    }
+
+    .crm-header-actions {
+      @apply flex w-full justify-between gap-3;
+    }
+
+    .crm-header-actions .btn {
+      @apply flex-1 justify-center;
+    }
+
+    .crm-header {
+      @apply flex-col gap-3 mt-4;
+      margin-left: clamp(0.95rem, 5.6vw, 1.8rem);
+      margin-right: clamp(0.8rem, 4.8vw, 1.5rem);
+    }
+
+    #searchInput,
+    .crm-header select,
+    #sortBy,
+    #pageSize {
+      @apply w-full;
+      min-width: 0;
+    }
+
+    .filter-button {
+      @apply w-full justify-center text-sm;
+    }
+
+    .advanced-filters {
+      margin-left: clamp(0.95rem, 5.6vw, 1.8rem);
+      margin-right: clamp(0.8rem, 4.8vw, 1.5rem);
+      @apply mt-3;
+    }
+
+    .adv-head {
+      @apply flex-col items-start gap-3;
+    }
+
+    .adv-body {
+      grid-template-columns: minmax(0, 1fr);
+      @apply gap-4;
+    }
+
+    .adv-footer {
+      @apply flex-col items-stretch gap-3;
+    }
+
+    #analytics-panels {
+      @apply flex-col gap-3 pt-1 pb-2;
+      padding-left: clamp(0.95rem, 5.6vw, 1.8rem);
+      padding-right: clamp(0.8rem, 4.8vw, 1.5rem);
+    }
+
+    .chart-area {
+      @apply flex-col items-stretch gap-6;
+    }
+
+    .chart-legend {
+      @apply w-full gap-4;
+    }
+
+    .chart-legend-item {
+      @apply flex-col items-start gap-2;
+    }
+
+    .clientes-list,
+    .consultores-list {
+      margin-left: clamp(1rem, 6vw, 1.9rem);
+      margin-right: clamp(0.85rem, 5vw, 1.6rem);
+      @apply mt-4 pb-24;
+    }
+
+    .clientes-scroll-area,
+    .consultores-scroll-area {
+      max-height: none;
+      @apply overflow-visible pb-14;
+      padding-right: clamp(0.32rem, 1.3vw, 0.75rem);
+    }
+
+    .cliente-card,
+    .consultor-card {
+      @apply flex-col items-stretch gap-4 px-5 py-5;
+    }
+
+    .cliente-info {
+      grid-template-columns: minmax(0, 1fr);
+      @apply gap-3;
+    }
+
+    .cliente-actions {
+      @apply flex-wrap gap-2;
+    }
+
+    .cliente-actions button {
+      @apply flex-1 justify-center;
+      min-width: calc(50% - 0.5rem);
+    }
+
+    .pagination-bar {
+      @apply px-5 py-5;
+    }
+
+    .modal-content {
+      @apply w-[94%] max-w-none px-6 py-6;
+    }
+
+    .history-log-modal .modal-content {
+      @apply w-[94%] px-6 py-6;
+    }
+
+    .history-modal-body {
+      max-height: 60vh;
+    }
+
+    .modal-buttons {
+      @apply flex-col items-stretch gap-3;
+    }
+
+    .modal-buttons .btn {
+      @apply w-full justify-center;
+    }
+
+    .crm-sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      height: 100vh;
+      width: min(70vw, 270px);
+      max-width: 270px;
+      transform: translateX(calc(-100% + 2.6rem));
+      transition: transform 0.32s cubic-bezier(0.16, 0.84, 0.44, 1);
+      @apply rounded-r-[24px] border border-white/10 shadow-[0_40px_140px_-60px_rgba(15,23,42,0.95)];
+      padding: 5.05rem 1.4rem 1.8rem 1.68rem;
+      z-index: 1400;
+    }
+
+    .crm-sidebar nav ul {
+      max-height: calc(100vh - 18rem);
+      overflow-y: auto;
+      @apply pr-1 gap-2;
+    }
+
+    .crm-sidebar nav li {
+      @apply text-base px-4 py-3;
+    }
+
+    .sidebar-logo {
+      @apply px-0 pb-5;
+    }
+
+    .sidebar-user {
+      @apply px-0;
+    }
+
+    .sidebar-logout-wrapper {
+      @apply px-0 pt-5;
+    }
+
+    .sidebar-toggle {
+      @apply inline-flex;
+    }
+
+    .crm-sidebar .sidebar-toggle-inside {
+      position: absolute;
+      top: 1.18rem;
+      right: 0.22rem;
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 0.85rem;
+      box-shadow: 0 16px 46px -34px rgba(129,140,248,0.88);
+    }
+
+    body.sidebar-expanded .crm-sidebar .sidebar-toggle-inside {
+      right: 0.82rem;
+    }
+
+    body.sidebar-collapsed .crm-sidebar .sidebar-toggle-inside {
+      right: 0.15rem;
+    }
+
+    .crm-sidebar-overlay {
+      display: block;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .crm-sidebar-overlay[hidden] {
+      display: none;
+    }
+
+    body.sidebar-collapsed .crm-sidebar {
+      transform: translateX(calc(-100% + 2.6rem));
+    }
+
+    body.sidebar-expanded .crm-sidebar {
+      transform: translateX(0);
+    }
+
+    body.sidebar-expanded .crm-sidebar-overlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    body.sidebar-collapsed .crm-sidebar-overlay {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    body.sidebar-expanded {
+      overflow: hidden;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .crm-layout {
+      padding: 4rem clamp(0.9rem, 8vw, 2.1rem) 0.95rem clamp(1.9rem, 11vw, 3rem);
+    }
+
+    .crm-header-top {
+      @apply px-4 py-4;
+    }
+
+    .crm-header-top h1 {
+      @apply text-[1.32rem];
+      letter-spacing: 0.12em;
+    }
+
+    .crm-header {
+      margin-left: clamp(0.8rem, 5.2vw, 1.3rem);
+      margin-right: clamp(0.55rem, 3.6vw, 0.95rem);
+    }
+
+    .advanced-filters {
+      margin-left: clamp(0.8rem, 5.2vw, 1.3rem);
+      margin-right: clamp(0.55rem, 3.6vw, 0.95rem);
+    }
+
+    .clientes-list,
+    .consultores-list {
+      margin-left: clamp(0.8rem, 5.2vw, 1.3rem);
+      margin-right: clamp(0.55rem, 3.6vw, 0.95rem);
+    }
+
+    .clientes-scroll-area,
+    .consultores-scroll-area {
+      padding-right: clamp(0.32rem, 1.8vw, 0.8rem);
+    }
+
+    .crm-sidebar {
+      width: min(78vw, 228px);
+      padding: 4.35rem 1.16rem 1.46rem 1.46rem;
+    }
+
+    .crm-sidebar .sidebar-toggle-inside {
+      right: -2.2rem;
+      width: 2.45rem;
+      height: 2.45rem;
+    }
+
+    .cliente-actions button {
+      min-width: 100%;
+    }
+
+    .modal-content {
+      @apply px-5 py-5;
+    }
+
+    .history-modal-body {
+      max-height: 55vh;
+    }
+  }
+
   .empty-state {
     @apply flex flex-col items-center justify-center gap-4 px-6 pt-12 pb-16 text-center text-crm-textSoft transition-all duration-300;
   }
@@ -1520,6 +1897,8 @@
     overflow: hidden;
     margin-top: 0;
     backdrop-filter: blur(18px);
+    display: flex;
+    flex-direction: column;
   }
 
   .sobre-box::before {
@@ -1535,6 +1914,7 @@
     overflow: auto;
     padding-right: 0.5rem;
     scroll-behavior: smooth;
+    flex: 1;
   }
 
   .sobre-scroll::-webkit-scrollbar {
@@ -1805,12 +2185,41 @@
     }
   }
 
+  @media (max-width: 768px) {
+    .sobre-content {
+      padding: 3.5rem 0 1.8rem;
+      align-items: stretch;
+    }
+
+    .sobre-box {
+      width: 100%;
+      margin: 0;
+      padding: 28px clamp(1.6rem, 8vw, 2.4rem);
+      border-radius: 0;
+    }
+
+    .sobre-scroll {
+      max-height: none;
+      padding-right: 0;
+    }
+
+    .sobre-section {
+      margin: 24px 0 12px;
+    }
+
+    .sobre-tech-grid {
+      gap: 16px;
+    }
+  }
+
   @media (max-width: 600px) {
     .sobre-content {
-      padding-top: 28px;
+      padding: 3.2rem 0 1.6rem;
     }
     .sobre-box {
-      padding: 28px 20px;
+      width: 100%;
+      padding: 24px clamp(1.2rem, 6vw, 1.8rem);
+      border-radius: 0;
     }
     .sobre-list li,
     .sobre-links li {
