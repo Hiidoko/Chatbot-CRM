@@ -43,6 +43,7 @@ export function renderClientes(container, clientes, callbacks) {
       </div>
       <div class="cliente-actions">
         <button class="edit" data-id="${cliente.id}"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+        <button class="history" data-id="${cliente.id}"><i class="fa-solid fa-clock-rotate-left"></i> Histórico</button>
         <button class="delete" data-id="${cliente.id}"><i class="fa-solid fa-trash"></i> Excluir</button>
       </div>`;
     const indicator = document.createElement('span');
@@ -67,6 +68,9 @@ export function renderClientes(container, clientes, callbacks) {
   container.appendChild(ul);
   // binding dos botões
   container.querySelectorAll('.edit').forEach(btn => { btn.onclick = () => callbacks.onEdit(Number(btn.dataset.id)); });
+  if (callbacks.onHistory) {
+    container.querySelectorAll('.history').forEach(btn => { btn.onclick = () => callbacks.onHistory(Number(btn.dataset.id)); });
+  }
   container.querySelectorAll('.delete').forEach(btn => { btn.onclick = () => callbacks.onDelete(Number(btn.dataset.id)); });
 }
 

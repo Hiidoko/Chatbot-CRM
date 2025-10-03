@@ -29,6 +29,9 @@ describe('API /api/clientes integração', () => {
   expect(postRes.body.total).toBe(1);
   expect(Array.isArray(postRes.body.data)).toBe(true);
   expect(postRes.body.data[0].id).toBeDefined();
+  expect(Array.isArray(postRes.body.data[0].statusHistorico)).toBe(true);
+  expect(postRes.body.data[0].statusHistorico).toHaveLength(1);
+  expect(postRes.body.data[0].statusHistorico[0].status).toBe('novo');
 
     // Listar paginado
     const listRes = await request(app).get('/api/clientes?pageSize=10').expect(200);
@@ -40,6 +43,10 @@ describe('API /api/clientes integração', () => {
     await request(app).patch(`/api/clientes/${id}`).send({ status: 'contatado' }).expect(200);
     const getRes = await request(app).get(`/api/clientes/${id}`).expect(200);
     expect(getRes.body.status).toBe('contatado');
+    expect(Array.isArray(getRes.body.statusHistorico)).toBe(true);
+    expect(getRes.body.statusHistorico.length).toBeGreaterThanOrEqual(2);
+    const ultimo = getRes.body.statusHistorico[getRes.body.statusHistorico.length - 1];
+    expect(ultimo.status).toBe('contatado');
 
     // Remover
     await request(app).delete(`/api/clientes/${id}`).expect(200);
@@ -64,5 +71,8 @@ describe('API /api/clientes integração', () => {
     expect(c.status).toBe('novo');
   // Agora origem default para POST público vira 'chatbot'
   expect(c.origem).toBe('chatbot');
+    expect(Array.isArray(c.statusHistorico)).toBe(true);
+    expect(c.statusHistorico).toHaveLength(1);
+    expect(c.statusHistorico[0].status).toBe('novo');
   });
 });

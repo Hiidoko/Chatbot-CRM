@@ -34,6 +34,12 @@ const editModal = document.getElementById('editModal');
 const modalTitle = document.getElementById('modalTitle');
 const saveEditBtn = document.getElementById('saveEdit');
 const cancelEditBtn = document.getElementById('cancelEdit');
+const historyModal = document.getElementById('historyModal');
+const historyModalTitle = document.getElementById('historyModalTitle');
+const historyTimelineBody = document.getElementById('historyTimeline');
+const historyEmpty = document.getElementById('historyEmpty');
+const historyExportBtn = document.getElementById('historyExport');
+const historyCloseBtn = document.getElementById('historyClose');
 let listaConsultorEl = null;
 let listaStatusFiltradoEl = null;
 let maquinasChartCanvas = null;
@@ -584,6 +590,8 @@ let editId = null;
 let isNew = false;
 let currentPage = 1;
 let modoConsultor = false;
+let historicoClienteAtual = null;
+let lastFocusedBeforeHistory = null;
 
 const STATUS_ORDER = ['novo','em andamento','contatado','convertido','perdido'];
 
@@ -717,6 +725,149 @@ function obterFonteAtual() {
   });
 }
 
+function formatarDataHoraHistorico(iso) {
+  if (!iso) return '—';
+  try {
+    const data = new Date(iso);
+    if (Number.isNaN(data.getTime())) return '—';
+    return data.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+  } catch (err) {
+    console.warn('[CRM] Falha ao formatar data do histórico', err);
+    return '—';
+  }
+}
+
+function rotuloOrigemHistorico(origem) {
+  if (!origem) return '—';
+  const lower = origem.toLowerCase();
+  if (lower === 'chatbot') return 'Chatbot';
+  if (lower === 'manual') return 'Manual';
+  if (lower === 'offline') return 'Offline';
+  if (lower === 'importacao') return 'Importação';
+  return origem.charAt(0).toUpperCase() + origem.slice(1);
+}
+
+function preencherModalHistorico(cliente) {
+  if (!historyTimelineBody || !historyEmpty) return;
+  const historico = Array.isArray(cliente?.statusHistorico)
+    ? [...cliente.statusHistorico].sort((a, b) => new Date(b?.alteradoEm || 0) - new Date(a?.alteradoEm || 0))
+    : [];
+  historyTimelineBody.innerHTML = '';
+  if (!historico.length) {
+    historyEmpty.hidden = false;
+    historyEmpty.textContent = 'Nenhum movimento registrado para este cliente.';
+    return;
+  }
+  historyEmpty.hidden = true;
+  historico.forEach(entry => {
+    const tr = document.createElement('tr');
+    const statusTd = document.createElement('td');
+    statusTd.textContent = entry?.status || '—';
+    const dataTd = document.createElement('td');
+    dataTd.textContent = formatarDataHoraHistorico(entry?.alteradoEm);
+    const origemTd = document.createElement('td');
+    origemTd.textContent = rotuloOrigemHistorico(entry?.origem);
+    const obsTd = document.createElement('td');
+    obsTd.textContent = entry?.observacao ? entry.observacao : '—';
+    tr.appendChild(statusTd);
+    tr.appendChild(dataTd);
+    tr.appendChild(origemTd);
+    tr.appendChild(obsTd);
+    historyTimelineBody.appendChild(tr);
+  });
+}
+
+function mostrarHistoricoModal() {
+  if (!historyModal) return;
+  lastFocusedBeforeHistory = document.activeElement;
+  historyModal.setAttribute('aria-hidden','false');
+  historyModal.classList.remove('closing');
+  historyModal.style.display = 'flex';
+  requestAnimationFrame(() => historyModal.classList.add('show'));
+  const primeiroFoco = historyModal.querySelector('[data-history-initial-focus]') || historyModal.querySelector('button, [href], [tabindex]:not([tabindex="-1"])');
+  if (primeiroFoco) {
+    setTimeout(() => primeiroFoco.focus(), 40);
+  }
+}
+
+function fecharHistoricoModal() {
+  if (!historyModal) return;
+  historyModal.setAttribute('aria-hidden','true');
+  historyModal.classList.add('closing');
+  historyModal.classList.remove('show');
+  setTimeout(() => {
+    if (historyModal.classList.contains('closing')) {
+      historyModal.style.display = 'none';
+      historyModal.classList.remove('closing');
+    }
+  }, 280);
+  historicoClienteAtual = null;
+  if (historyTimelineBody) historyTimelineBody.innerHTML = '';
+  if (historyEmpty) historyEmpty.hidden = true;
+  if (lastFocusedBeforeHistory && typeof lastFocusedBeforeHistory.focus === 'function') {
+    setTimeout(() => lastFocusedBeforeHistory.focus(), 120);
+  }
+}
+
+function abrirHistoricoCliente(id) {
+  const cliente = crm.obter(id);
+  if (!cliente) {
+    toast('Cliente não encontrado para histórico','erro');
+    return;
+  }
+  historicoClienteAtual = cliente;
+  if (historyModalTitle) {
+    const nome = cliente.nome || `ID ${cliente.id}`;
+    historyModalTitle.textContent = `Histórico de ${nome}`;
+  }
+  preencherModalHistorico(cliente);
+  mostrarHistoricoModal();
+}
+
+function exportarHistoricoAtual() {
+  if (!historicoClienteAtual) {
+    toast('Nenhum cliente selecionado','info');
+    return;
+  }
+  const historico = Array.isArray(historicoClienteAtual.statusHistorico) ? historicoClienteAtual.statusHistorico : [];
+  if (!historico.length) {
+    toast('Sem registros para exportar','info');
+    return;
+  }
+  const linhas = [['Status','Data/Hora','Origem','Observação']];
+  historico.forEach(entry => {
+    linhas.push([
+      entry?.status || '—',
+      formatarDataHoraHistorico(entry?.alteradoEm),
+      rotuloOrigemHistorico(entry?.origem),
+      entry?.observacao ? entry.observacao.replace(/\s+/g,' ').trim() : ''
+    ]);
+  });
+  const csv = linhas.map(row => row.map(col => `"${String(col ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
+  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+  const nomeBase = ((historicoClienteAtual.nome || `cliente-${historicoClienteAtual.id || ''}`)
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')) || 'cliente';
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `historico-status-${nomeBase}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(link.href);
+    link.remove();
+  }, 800);
+}
+
+historyExportBtn?.addEventListener('click', exportarHistoricoAtual);
+historyCloseBtn?.addEventListener('click', fecharHistoricoModal);
+historyModal?.addEventListener('click', e => {
+  if (e.target === historyModal) fecharHistoricoModal();
+});
+
 function atualizarLista() {
   if (!clientesContainer) return;
   let lista = obterFonteAtual();
@@ -724,7 +875,8 @@ function atualizarLista() {
   const pageData = paginar(lista);
   renderClientes(clientesContainer, pageData.slice, {
     onEdit: abrirModalEdicao,
-    onDelete: excluirCliente
+    onDelete: excluirCliente,
+    onHistory: abrirHistoricoCliente
   });
   prepararEdicaoInline();
   clientesContainer.querySelectorAll('.cliente-card').forEach(c => { if (getComputedStyle(c).opacity === '0') c.style.opacity = '1'; });
@@ -1615,18 +1767,28 @@ function fecharModal() {
     lastFocusedBeforeModal.focus();
   }
 }
-// Trap de foco
+// Trap de foco compartilhado entre modais
 document.addEventListener('keydown', e => {
   if (e.key !== 'Tab') return;
-  if (editModal.style.display !== 'flex') return;
-  const focusables = editModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  let modalAtivo = null;
+  if (historyModal && historyModal.style.display === 'flex') modalAtivo = historyModal;
+  else if (editModal.style.display === 'flex') modalAtivo = editModal;
+  if (!modalAtivo) return;
+  const focusables = modalAtivo.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
   if (focusables.length === 0) return;
   const first = focusables[0];
   const last = focusables[focusables.length -1];
   if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
   else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
 });
-window.addEventListener('keydown', e => { if (e.key === 'Escape' && editModal.style.display === 'flex') fecharModal(); });
+window.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (historyModal && historyModal.style.display === 'flex') {
+    fecharHistoricoModal();
+  } else if (editModal.style.display === 'flex') {
+    fecharModal();
+  }
+});
 
 function bindClientesRefs() {
   clientesContainer = document.getElementById('clientes-list');

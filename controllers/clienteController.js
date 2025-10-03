@@ -83,9 +83,9 @@ module.exports = {
     const payload = pickAllowed(req.body || {});
     const { valid, errors, value } = validateClienteParcial(payload);
     if (!valid) return res.status(422).json({ message: 'Erros de validação', errors });
-    const ok = await atualizar(id, value);
-    if (!ok) return res.status(404).json({ message: 'Cliente não encontrado' });
-    return res.json({ message: 'Cliente atualizado com sucesso' });
+    const atualizado = await atualizar(id, value);
+    if (!atualizado) return res.status(404).json({ message: 'Cliente não encontrado' });
+    return res.json({ message: 'Cliente atualizado com sucesso', data: atualizado });
   },
   async remover(req, res) {
     const id = parseId(req.params.id);
@@ -101,9 +101,9 @@ module.exports = {
     if (!Object.keys(payload).length) return res.status(400).json({ message: 'Payload vazio.' });
     const { valid, errors, value } = validateClienteParcial(payload);
     if (!valid) return res.status(422).json({ message: 'Erros de validação', errors });
-    const ok = await atualizar(id, value);
-    if (!ok) return res.status(404).json({ message: 'Cliente não encontrado' });
-    return res.json({ message: 'Cliente atualizado (parcial) com sucesso' });
+    const atualizado = await atualizar(id, value);
+    if (!atualizado) return res.status(404).json({ message: 'Cliente não encontrado' });
+    return res.json({ message: 'Cliente atualizado (parcial) com sucesso', data: atualizado });
   },
   async head(req, res) {
     const all = await listar();

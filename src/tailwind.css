@@ -807,6 +807,62 @@
     @apply mt-1 pt-4 flex justify-end gap-3.5 border-t border-white/10;
   }
 
+  .history-log-modal .modal-content {
+    @apply w-[92%] max-w-[720px] flex flex-col gap-6;
+  }
+
+  .history-modal-header {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .modal-close {
+    @apply inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/15 bg-white/10 text-white/80 transition-colors duration-150 ease-crm;
+  }
+
+  .modal-close:hover {
+    @apply bg-white/15 text-white;
+  }
+
+  .modal-close:focus-visible {
+    @apply outline-none ring-2 ring-crm-focus;
+  }
+
+  .history-modal-body {
+    @apply max-h-[420px] overflow-y-auto pr-1;
+  }
+
+  .history-table-wrapper {
+    @apply rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md;
+  }
+
+  .history-table {
+    @apply w-full border-collapse text-left text-sm text-white/75;
+  }
+
+  .history-table thead {
+    @apply sticky top-0 bg-white/10 backdrop-blur-lg;
+  }
+
+  .history-table th {
+    @apply px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/60;
+  }
+
+  .history-table td {
+    @apply px-4 py-3 align-top border-t border-white/10 text-[0.8rem];
+  }
+
+  .history-table tbody tr:nth-child(even) {
+    @apply bg-white/5;
+  }
+
+  .history-empty {
+    @apply mb-3 text-sm text-white/60 italic;
+  }
+
+  .history-modal-footer {
+    @apply mt-2 flex justify-end;
+  }
+
   .validation-summary {
     @apply bg-status-perdidoBg border border-crm-danger text-status-perdidoFg px-3.5 py-3 rounded-[12px] text-xs leading-relaxed shadow-crm-sm;
   }

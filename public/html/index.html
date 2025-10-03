@@ -127,6 +127,38 @@
             </div>
     </div>
 
+            <div id="historyModal" class="modal history-log-modal" aria-hidden="true">
+                <div class="modal-content history-modal-content">
+                    <header class="history-modal-header">
+                        <h2 id="historyModalTitle">Histórico de Status</h2>
+                        <button id="historyClose" class="modal-close" type="button" aria-label="Fechar histórico" data-history-initial-focus>
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </header>
+                    <div class="history-modal-body">
+                        <p id="historyEmpty" class="history-empty" hidden>Nenhum movimento registrado para este cliente.</p>
+                        <div class="history-table-wrapper" role="region" aria-live="polite" aria-label="Linhas do histórico de status">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Data/Hora</th>
+                                        <th scope="col">Origem</th>
+                                        <th scope="col">Observação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTimeline"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <footer class="history-modal-footer">
+                        <button id="historyExport" class="btn btn-primary" type="button">
+                            <i class="fa-solid fa-file-arrow-down"></i> Exportar Excel (CSV)
+                        </button>
+                    </footer>
+                </div>
+            </div>
+
     <div id="chatbot-widget">
         <button id="open-chatbot" aria-label="Abrir chatbot" aria-expanded="false" title="Abrir Chatbot" class="chatbot-fab">
             <span class="visually-hidden">Abrir Chatbot</span>

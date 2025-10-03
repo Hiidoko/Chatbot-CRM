@@ -10,7 +10,16 @@
     "dataCadastro": "2025-10-02T14:23:05.030Z",
     "consultor": "João",
     "origem": "manual",
-    "id": 1759414985192
+    "id": 1759414985192,
+    "statusHistorico": [
+      {
+        "status": "novo",
+        "alteradoEm": "2025-10-02T14:23:05.030Z",
+        "origem": "manual",
+        "alteradoPor": null,
+        "observacao": "Cadastro inicial"
+      }
+    ]
   },
   {
     "nome": "Use",
@@ -23,7 +32,16 @@
     "dataCadastro": "2025-10-02T14:23:44.354Z",
     "consultor": "Ana",
     "origem": "manual",
-    "id": 1759415030975
+    "id": 1759415030975,
+    "statusHistorico": [
+      {
+        "status": "novo",
+        "alteradoEm": "2025-10-02T14:23:44.354Z",
+        "origem": "manual",
+        "alteradoPor": null,
+        "observacao": "Cadastro inicial"
+      }
+    ]
   },
   {
     "nome": "joao",
@@ -37,6 +55,15 @@
     "consultor": "João",
     "dataCadastro": "2025-10-02T18:47:50.537Z",
     "id": 1759430871161,
-    "notas": ""
+    "notas": "",
+    "statusHistorico": [
+      {
+        "status": "novo",
+        "alteradoEm": "2025-10-02T18:47:50.537Z",
+        "origem": "manual",
+        "alteradoPor": null,
+        "observacao": "Cadastro inicial"
+      }
+    ]
   }
 ]

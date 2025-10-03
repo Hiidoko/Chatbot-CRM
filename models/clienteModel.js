@@ -22,6 +22,61 @@ if (STORAGE === 'mongo' && MongoClienteRepository) {
 
 function gerarId() { return Date.now() + Math.floor(Math.random() * 10000); }
 
+function criarEntradaHistorico({ status, origem, observacao, alteradoPor, timestamp }) {
+  return {
+    status: status || 'novo',
+    alteradoEm: timestamp || new Date().toISOString(),
+    origem: origem || 'manual',
+    alteradoPor: alteradoPor || null,
+    observacao: observacao || null
+  };
+}
+
+function inicializarHistorico(cliente, { observacao } = {}) {
+  const base = cliente || {};
+  const ts = base.dataCadastro || new Date().toISOString();
+  return [criarEntradaHistorico({
+    status: base.status || 'novo',
+    origem: base.origem || 'manual',
+    observacao: observacao ?? 'Cadastro inicial',
+    timestamp: ts
+  })];
+}
+
+function ordenarHistorico(lista = []) {
+  return [...lista].sort((a, b) => {
+    const va = new Date(a?.alteradoEm || 0).getTime();
+    const vb = new Date(b?.alteradoEm || 0).getTime();
+    return va - vb;
+  });
+}
+
+function mesclarHistoricoStatus(original, atualizado, { motivoStatus, usuario } = {}) {
+  const anterior = original || {};
+  const proximo = atualizado || {};
+  let historico = Array.isArray(anterior.statusHistorico) && anterior.statusHistorico.length
+    ? [...anterior.statusHistorico]
+    : inicializarHistorico({ ...anterior, dataCadastro: anterior.dataCadastro || proximo.dataCadastro });
+
+  if (!Array.isArray(historico) || historico.length === 0) {
+    historico = inicializarHistorico({ ...anterior, status: anterior.status, origem: anterior.origem, dataCadastro: anterior.dataCadastro });
+  }
+
+  const statusAnterior = (anterior.status || 'novo').toLowerCase();
+  const statusAtual = (proximo.status || 'novo').toLowerCase();
+  if (statusAtual !== statusAnterior) {
+    historico.push(criarEntradaHistorico({
+      status: proximo.status || 'novo',
+      origem: proximo.origem || anterior.origem || 'manual',
+      observacao: motivoStatus || 'Status atualizado',
+      alteradoPor: usuario || null,
+      timestamp: new Date().toISOString()
+    }));
+  }
+
+  return ordenarHistorico(historico);
+}
+
 function prepararNovo(c) {
   const norm = normalizeCliente(c);
   norm.consultor = norm.consultor || selecionarConsultor(norm.cidade);
@@ -29,6 +84,7 @@ function prepararNovo(c) {
   norm.origem = norm.origem || 'manual';
   norm.dataCadastro = new Date().toISOString();
   norm.id = gerarId();
+  norm.statusHistorico = inicializarHistorico(norm);
   return norm;
 }
 
@@ -51,9 +107,19 @@ async function atualizar(id, dados) {
   norm.status = norm.status || atual.status || 'novo';
   norm.dataCadastro = atual.dataCadastro;
   norm.id = id;
+  const motivoStatus = dados && Object.prototype.hasOwnProperty.call(dados, 'status') && (dados.status || '').toLowerCase() !== (atual.status || '').toLowerCase()
+    ? 'Status atualizado manualmente'
+    : null;
+  norm.statusHistorico = mesclarHistoricoStatus(atual, norm, { motivoStatus });
+  if (!Array.isArray(norm.statusHistorico) || norm.statusHistorico.length === 0) {
+    norm.statusHistorico = inicializarHistorico(norm);
+  }
   const ok = await repo.update(id, norm);
-  if (!ok) logger.warn({ id }, 'atualizar falhou - não encontrado');
-  return ok;
+  if (!ok) {
+    logger.warn({ id }, 'atualizar falhou - não encontrado');
+    return false;
+  }
+  return { ...norm };
 }
 
 async function remover(id) {

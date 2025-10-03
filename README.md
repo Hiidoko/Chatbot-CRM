@@ -17,6 +17,7 @@ O sistema permite captar, listar, filtrar, editar e analisar leads com uma inter
 - Painéis analíticos dinâmicos (status, consultor, máquina) refletindo os filtros ativos
 - Painel de clientes por consultor na aba Consultores (carregado sob demanda)
 - Chatbot integrado que envia novos leads para o CRM via `postMessage`
+- Histórico de status por cliente com linha do tempo e exportação para Excel (CSV)
 - Acessibilidade: navegação por teclado, ARIA relevante, feedback visual moderado
 - Feedback de UI: toasts, diálogos de confirmação customizados, animações respeitando preferência do usuário
 - Estrutura modular (camadas de validação, normalização e lógica reutilizáveis)

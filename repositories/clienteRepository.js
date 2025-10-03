@@ -12,6 +12,32 @@
 const fs = require('fs');
 const fsp = require('fs/promises');
 
+function ensureStatusHistory(cliente) {
+  if (!cliente || typeof cliente !== 'object') return cliente;
+  const dataCadastro = cliente.dataCadastro || new Date().toISOString();
+  const statusAtual = cliente.status || 'novo';
+  const origemAtual = cliente.origem || 'manual';
+  let historico = Array.isArray(cliente.statusHistorico) ? cliente.statusHistorico.filter(Boolean) : [];
+  if (!historico.length) {
+    historico = [{
+      status: statusAtual,
+      alteradoEm: dataCadastro,
+      origem: origemAtual,
+      alteradoPor: cliente.statusHistorico?.[0]?.alteradoPor || null,
+      observacao: (cliente.statusHistorico?.[0] && cliente.statusHistorico[0].observacao) || 'Cadastro inicial'
+    }];
+  } else {
+    historico = historico.map(entry => ({
+      status: entry?.status || statusAtual,
+      alteradoEm: entry?.alteradoEm || dataCadastro,
+      origem: entry?.origem || origemAtual,
+      alteradoPor: entry?.alteradoPor || null,
+      observacao: entry?.observacao || null
+    })).sort((a, b) => new Date(a.alteradoEm || 0) - new Date(b.alteradoEm || 0));
+  }
+  return { ...cliente, statusHistorico: historico };
+}
+
 class FileLockQueue {
   constructor(){ this._chain = Promise.resolve(); }
   run(task){
@@ -37,7 +63,8 @@ class FileClienteRepository {
     try {
       if (!fs.existsSync(this.filePath)) { this._clientes = []; this._loaded = true; return; }
       const raw = await fsp.readFile(this.filePath, 'utf8');
-      this._clientes = JSON.parse(raw || '[]');
+      const parsed = JSON.parse(raw || '[]');
+      this._clientes = Array.isArray(parsed) ? parsed.map(ensureStatusHistory) : [];
     } catch (e) {
       console.warn('[ClienteRepository] Falha ao carregar arquivo, iniciando vazio:', e.message);
       this._clientes = [];
@@ -55,13 +82,13 @@ class FileClienteRepository {
 
   async getAll(){
     await this._ensureLoaded();
-    return [...this._clientes];
+    return this._clientes.map(ensureStatusHistory);
   }
 
   async addMany(list){
     if (!Array.isArray(list) || list.length === 0) return true; // nada a fazer
     await this._ensureLoaded();
-    list.forEach(c => this._clientes.push(c));
+    list.forEach(c => this._clientes.push(ensureStatusHistory(c)));
     await this._lock.run(() => this._persist());
     return true;
   }
@@ -70,7 +97,7 @@ class FileClienteRepository {
     await this._ensureLoaded();
     const idx = this._clientes.findIndex(c => c.id === id);
     if (idx === -1) return false;
-    this._clientes[idx] = { ...this._clientes[idx], ...patch, id: this._clientes[idx].id };
+    this._clientes[idx] = ensureStatusHistory({ ...this._clientes[idx], ...patch, id: this._clientes[idx].id });
     await this._lock.run(() => this._persist());
     return true;
   }
