@@ -217,19 +217,20 @@ Implementado um primeiro pass de melhorias visando navegação assistiva, foco p
 - Fechamento devolve foco ao elemento que disparou a ação (persistido em variável). 
 
 ### Possíveis Evoluções Futuras
-- Inserir `aria-describedby` no modal para associar texto auxiliar contextual.
-- Implementar anúncios de toast via região `aria-live="assertive"` isolada.
-- Oferecer atalho global para busca (ex: `/` ou Ctrl+K) anunciando mudança de foco.
-- Avaliar uso de `details/summary` nativo para simplificar cards (se mantiver design).
-- Testes automatizados de acessibilidade (axe-core / @testing-library/jest-dom) no pipeline.
+- Validar fluxos críticos com leitores de tela (NVDA/VoiceOver) e ajustar descrições contextuais.
+- Introduzir modo de alto contraste alternável dentro da aplicação.
+- Oferecer preferências personalizadas de animação e feedback tátil/auditivo.
+- Criar tour guiado acessível que destaque o painel de filtros avançados.
+- Automatizar auditorias de acessibilidade via axe-core/pa11y nas pipelines CI.
 
 > Objetivo: manter a interface escalável sem depender de frameworks, garantindo baseline robusto para leitores de tela e navegação somente por teclado.
 
 ## 🔄 Evoluções Futuras (Sugestões)
-- Persistência real (DB + camada de repositório)
-- Autenticação e autorização por perfil
-- Exportação (CSV / Excel) e importação
-- Testes automatizados (Jest + Supertest para API, Playwright para fluxo end-to-end)
+- Integração com provedores externos (e-mail marketing, help desk) via webhooks.
+- Painel de relatórios agendáveis com exportação em PDF e compartilhamento seguro.
+- Notificações push/web para leads de alta prioridade.
+- Painel de automações com regras if-this-then-that e histórico de execuções.
+- Empacotamento oficial com Docker Compose e documentação de deploy em nuvem.
 ## 🧪 Testes & Qualidade
 
 Infra adicionada:
@@ -256,9 +257,10 @@ npm run format:fix # aplica formatação
 
 Para adicionar um novo teste, crie um arquivo em `tests/*.test.js`.
 
-- Internacionalização total (strings restantes, datas, formatos)
-- Dark mode + theming dinâmico
-- WebSocket / SSE para multiusuário em tempo real
+### Backlog Técnico
+- Aumentar cobertura de testes end-to-end com Playwright focando no fluxo do chatbot.
+- Adicionar testes de performance (Lighthouse) à pipeline CI.
+- Monitorar métricas de uso com coleta opcional (Matomo/PostHog) preservando privacidade.
 
 ## ⚠️ Aviso
 Projeto educativo. Não armazene dados sensíveis. Adapte segurança, rate limiting, logs estruturados e auditoria antes de qualquer uso externo.

@@ -102,6 +102,16 @@
     @apply box-border;
   }
 
+  select {
+    color: var(--color-text);
+    background-color: rgba(15,23,42,0.86);
+  }
+
+  select option {
+    color: #0f172a;
+    background-color: #f8fafc;
+  }
+
   ::selection {
     background: rgba(129,140,248,0.45);
     color: #fff;
@@ -385,7 +395,7 @@
   .crm-header select,
   #sortBy,
   #pageSize {
-    @apply rounded-[14px] border border-white/10 bg-white/10 px-3.5 py-2.5 text-sm transition-all duration-200 ease-crm min-w-[150px] text-white/80 backdrop-blur;
+    @apply rounded-[14px] border border-white/15 bg-slate-900/70 px-3.5 py-2.5 text-sm transition-all duration-200 ease-crm min-w-[150px] text-white/90 backdrop-blur;
   }
 
   .filter-button {
@@ -429,7 +439,7 @@
   }
 
   .adv-field select {
-    @apply rounded-[14px] border border-white/10 bg-white/10 px-3.5 py-2 text-sm text-white/80 focus:outline-none focus:ring-2 focus:ring-crm-focus backdrop-blur;
+    @apply rounded-[14px] border border-white/15 bg-slate-900/70 px-3.5 py-2 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-crm-focus backdrop-blur;
   }
 
   .adv-footer {
@@ -1352,7 +1362,7 @@
   }
 
   .consultores-search-row select {
-    @apply rounded-[14px] border border-white/10 bg-white/10 px-3 py-2.5 text-sm text-white/80 focus:outline-none focus:ring-2 focus:ring-crm-focus backdrop-blur;
+    @apply rounded-[14px] border border-white/15 bg-slate-900/70 px-3 py-2.5 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-crm-focus backdrop-blur;
   }
 
   .consultores-search-btn {
@@ -1524,7 +1534,7 @@
   /* Inline editor */
   .inline-editor input,
   .inline-editor select {
-    @apply rounded-[10px] border border-white/10 bg-white/10 px-2 py-1 text-xs text-white/80 focus:outline-none focus:ring-2 focus:ring-crm-focus backdrop-blur;
+    @apply rounded-[10px] border border-white/15 bg-slate-900/70 px-2 py-1 text-xs text-white/90 focus:outline-none focus:ring-2 focus:ring-crm-focus backdrop-blur;
   }
 
   .inline-actions {
@@ -1644,7 +1654,8 @@
   }
 
   .maquina-select {
-    @apply appearance-none rounded-[12px] border border-crm-borderSoft bg-white px-3.5 py-2.5 text-[0.8rem] font-semibold tracking-wide text-crm-text shadow-[0_2px_4px_rgba(0,0,0,0.06)] bg-gradient-to-tr from-crm-primaryAccent/10 to-crm-primary/20;
+    @apply appearance-none rounded-[12px] border border-white/15 bg-slate-900/80 px-3.5 py-2.5 text-[0.8rem] font-semibold tracking-wide text-white/90 shadow-[0_20px_50px_-30px_rgba(129,140,248,0.65)];
+    background-image: linear-gradient(135deg, rgba(129,140,248,0.18), rgba(236,72,153,0.16));
   }
 
   .maquina-hint {
